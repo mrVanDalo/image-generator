@@ -12,6 +12,8 @@ in pkgs.mkShell {
     cargo
     rustfmt
     # taskwarrior-hooks
+
+    cairo
   ];
 
 }

@@ -11,6 +11,6 @@ maintenance = { status = "actively-developed" }
 exclude = [ "shell.nix", "default.nix" ]
 
 [dependencies]
-cairo-sys-rs = "0.9.2"
+cairo-rs = { version = "0.8.0", features = [ "png" ] }
 
 
