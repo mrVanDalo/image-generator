@@ -11,10 +11,34 @@ use std::f64::consts::PI;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
+use std::collections::HashMap;
+use std::io::BufReader;
+
 
 #[derive(Serialize, Deserialize)]
 struct Icon {
     path: Vec<Vec<f32>>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Structure {
+    icons: HashMap<String,Icon>,
+}
+
+
+fn parse_example(){
+    let mut file = File::open("./sketch/structure.json").expect("Couldn't create structure.json");
+    let reader = BufReader::new(file);
+    let structure : Structure = serde_json::from_reader(reader).unwrap();
+    for key in structure.icons.keys(){
+        println!("{}",key);
+    }
+}
+
+
+fn main() {
+    //render_example();
+    parse_example();
 }
 
 // draw a path
@@ -24,9 +48,10 @@ struct Icon {
 // context.curve_to(x0,y0,x1,y1,x, y); // curve to (x,y) with (x0,y0) as outgoing and (x1,y1) incoming curve
 // context.close_path();
 
-fn main() {
+fn render_example() {
     let surface = ImageSurface::create(Format::Rgb24, 100, 100).expect("Can't create surface");
     let context = Context::new(&surface);
+
 
     // Examples are in 1.0 x 1.0 coordinate space
     // context.scale(120.0, 120.0);
@@ -48,3 +73,4 @@ fn main() {
         Err(_) => println!("Error create file.png"),
     }
 }
+
