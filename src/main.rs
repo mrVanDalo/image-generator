@@ -4,16 +4,13 @@ use cairo::Context;
 use cairo::Format;
 use cairo::ImageSurface;
 
-use std::fs::File;
 use std::f64::consts::PI;
-
-
+use std::fs::File;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::collections::HashMap;
 use std::io::BufReader;
-
 
 #[derive(Serialize, Deserialize)]
 struct Icon {
@@ -22,19 +19,17 @@ struct Icon {
 
 #[derive(Serialize, Deserialize)]
 struct Structure {
-    icons: HashMap<String,Icon>,
+    icons: HashMap<String, Icon>,
 }
 
-
-fn parse_example(){
+fn parse_example() {
     let mut file = File::open("./sketch/structure.json").expect("Couldn't create structure.json");
     let reader = BufReader::new(file);
-    let structure : Structure = serde_json::from_reader(reader).unwrap();
-    for key in structure.icons.keys(){
-        println!("{}",key);
+    let structure: Structure = serde_json::from_reader(reader).unwrap();
+    for key in structure.icons.keys() {
+        println!("{}", key);
     }
 }
-
 
 fn main() {
     //render_example();
@@ -52,7 +47,6 @@ fn render_example() {
     let surface = ImageSurface::create(Format::Rgb24, 100, 100).expect("Can't create surface");
     let context = Context::new(&surface);
 
-
     // Examples are in 1.0 x 1.0 coordinate space
     // context.scale(120.0, 120.0);
 
@@ -63,9 +57,8 @@ fn render_example() {
     context.rectangle(25.0, 25.0, 50.0, 50.0);
     context.stroke();
 
-    context.arc(50.0, 50.0,25.0,0.0,2.0 * PI);
+    context.arc(50.0, 50.0, 25.0, 0.0, 2.0 * PI);
     context.stroke();
-
 
     let mut file = File::create("file.png").expect("Couldn't create 'file.png'");
     match surface.write_to_png(&mut file) {
@@ -73,4 +66,3 @@ fn render_example() {
         Err(_) => println!("Error create file.png"),
     }
 }
-
