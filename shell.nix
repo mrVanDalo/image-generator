@@ -16,7 +16,7 @@ in pkgs.mkShell {
     cairo
 
     (pkgs.writers.writeBashBin "reformat" ''
-      for file in `find ${toString ./.} -type f | egrep "\.rs"`
+      for file in `find ${toString ./.} -type f | egrep "\.rs$"`
       do
         ${pkgs.rustfmt}/bin/rustfmt "$file"
       done

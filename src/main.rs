@@ -7,9 +7,11 @@ use std::fs::File;
 
 mod composition;
 mod icon;
+mod palette;
 mod rendable;
 mod structure;
 
+use crate::palette::Palette;
 use crate::rendable::Rendable;
 use crate::structure::Structure;
 
@@ -23,8 +25,14 @@ fn main() {
     .expect("Can't create surface");
     let context = Context::new(&surface);
 
+    let palette = Palette::dark_on_bright(Palette::random_color());
+
     // set background color
-    context.set_source_rgb(1.0, 1.0, 1.0);
+    context.set_source_rgb(
+        f64::from(palette.background_color.red),
+        f64::from(palette.background_color.green),
+        f64::from(palette.background_color.blue),
+    );
     context.rectangle(
         0.,
         0.,
@@ -34,7 +42,11 @@ fn main() {
     context.fill();
 
     // configure line
-    context.set_source_rgb(0., 0., 0.);
+    context.set_source_rgb(
+        f64::from(palette.fill_color.red),
+        f64::from(palette.fill_color.green),
+        f64::from(palette.fill_color.blue),
+    );
 
     structure.render(&context);
 
