@@ -4,12 +4,9 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 
-mod icon;
-use icon::Icon;
-
-mod composition;
-use composition::Composition;
-use composition::Query;
+use crate::icon::Icon;
+use crate::composition::Composition;
+use crate::composition::Query;
 
 const DEFAULT_WIDTH: i32 = 100;
 const DEFAULT_HEIGHT: i32 = 100;

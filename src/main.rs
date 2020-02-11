@@ -1,5 +1,3 @@
-extern crate cairo;
-
 use cairo::Context;
 use cairo::Format;
 use cairo::ImageSurface;
@@ -7,7 +5,10 @@ use cairo::ImageSurface;
 //use std::f64::consts::PI;
 use std::fs::File;
 
+mod composition;
+mod icon;
 mod structure;
+
 use structure::Structure;
 
 fn main() {
