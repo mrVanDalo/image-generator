@@ -1,14 +1,41 @@
 {
-  "compositions":{
-  },
-  "objects":{
-  },
+  "width" : 600,
+  "height" : 600,
+  "compositions": [
+      {
+      "x": 100,
+      "y": 100,
+      "size": 50,
+      "query": {
+        "icon": "head1"
+      }
+      },
+      {
+      "x": 200,
+      "y": 100,
+      "size": 100,
+      "query": {
+        "icon": "head1"
+      }
+      },
+      {
+      "x": 300,
+      "y": 100,
+      "size": 200,
+      "query": {
+        "icon": "head1"
+      }
+    }
+  ],
+  "objects":{},
   "icons": {
-    "tree": {
-      "path": [ [0,1], [0,2], [0,3]]
-    },
-    "leaf": {
-      "path": [[0,1],[1,2]]
+    "head1": {
+      "path": [ [-50,-50],
+                [50,0],
+                [-50,50],
+                [0,0]
+              ],
+      "tags":["arrow"]
     }
   }
 }

@@ -14,6 +14,13 @@ in pkgs.mkShell {
     # taskwarrior-hooks
 
     cairo
+
+    (pkgs.writers.writeBashBin "reformat" ''
+      for file in `find ${toString ./.} -type f | egrep "\.rs"`
+      do
+        ${pkgs.rustfmt}/bin/rustfmt "$file"
+      done
+    '')
   ];
 
 }
