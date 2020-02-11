@@ -1,13 +1,15 @@
 use cairo::Context;
 use serde::{Deserialize, Serialize};
 
+use crate::rendable::Rendable;
+
 #[derive(Serialize, Deserialize)]
 pub struct Icon {
     path: Vec<Vec<f64>>,
 }
 
-impl Icon {
-    pub fn render(&self, context: &Context) {
+impl Rendable for Icon {
+    fn render(&self, context: &Context) {
         let mut first = true;
         for path in self.path.iter() {
             if first {
@@ -20,7 +22,9 @@ impl Icon {
         context.close_path();
         context.fill();
     }
+}
 
+impl Icon {
     // use proper function
     #[inline]
     fn draw_path_element(element: &Vec<f64>, context: &Context) {

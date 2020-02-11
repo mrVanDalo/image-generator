@@ -7,9 +7,11 @@ use std::fs::File;
 
 mod composition;
 mod icon;
+mod rendable;
 mod structure;
 
-use structure::Structure;
+use crate::rendable::Rendable;
+use crate::structure::Structure;
 
 fn main() {
     let structure = Structure::load_from_file("./sketch/structure.json").unwrap();

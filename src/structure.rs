@@ -4,9 +4,10 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 
-use crate::icon::Icon;
 use crate::composition::Composition;
 use crate::composition::Query;
+use crate::icon::Icon;
+use crate::rendable::Rendable;
 
 const DEFAULT_WIDTH: i32 = 100;
 const DEFAULT_HEIGHT: i32 = 100;
@@ -39,10 +40,13 @@ impl Structure {
         }
     }
 
-    pub fn get_element_from_query(&self, query: &Query) -> Option<&Icon> {
+    pub fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
         match &query.icon {
-            Some(icon) => self.icons.get(icon),
-            _ => None,
+            None => None,
+            Some(icon) => match self.icons.get(icon) {
+                None => None,
+                Some(icon) => Some(Box::new(icon)),
+            },
         }
     }
 }
