@@ -1,13 +1,13 @@
+use crate::composition::Composition;
+use crate::composition::Query;
+use crate::icon::Icon;
+use crate::rendable::Rendable;
+use cairo::Context;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
-
-use crate::composition::Composition;
-use crate::composition::Query;
-use crate::icon::Icon;
-use crate::rendable::Rendable;
 
 const DEFAULT_WIDTH: i32 = 100;
 const DEFAULT_HEIGHT: i32 = 100;
@@ -27,19 +27,20 @@ impl Structure {
         let structure: Structure = serde_json::from_reader(reader)?;
         return Ok(structure);
     }
+    #[inline]
     pub fn get_image_width(&self) -> i32 {
         match self.width {
             Some(width) => width,
             None => DEFAULT_WIDTH,
         }
     }
+    #[inline]
     pub fn get_image_height(&self) -> i32 {
         match self.height {
             Some(height) => height,
             None => DEFAULT_HEIGHT,
         }
     }
-
     pub fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
         match &query.icon {
             None => None,
@@ -47,6 +48,23 @@ impl Structure {
                 None => None,
                 Some(icon) => Some(Box::new(icon)),
             },
+        }
+    }
+}
+
+impl Rendable for Structure {
+    fn render(&self, context: &Context) {
+        for composition in &self.compositions {
+            context.save();
+            context.translate(composition.x, composition.y);
+            context.scale(0.01 * composition.size(), 0.01 * composition.size());
+
+            let rendable = self.get_element_from_query(&composition.query);
+            if rendable.is_some() {
+                rendable.unwrap().render(&context);
+            }
+
+            context.restore();
         }
     }
 }

@@ -36,19 +36,7 @@ fn main() {
     // configure line
     context.set_source_rgb(0., 0., 0.);
 
-    // composition sketch
-    for composition in &structure.compositions {
-        context.save();
-        context.translate(composition.x, composition.y);
-        context.scale(0.01 * composition.size(), 0.01 * composition.size());
-
-        let rendable = structure.get_element_from_query(&composition.query);
-        if rendable.is_some() {
-            rendable.unwrap().render(&context);
-        }
-
-        context.restore();
-    }
+    structure.render(&context);
 
     render_image("file.png", &surface);
 }
