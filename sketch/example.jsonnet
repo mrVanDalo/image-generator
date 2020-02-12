@@ -9,7 +9,7 @@ local composition(x, y, angle=0, size=100, query='head1') = {
   },
   size: size,
   query: {
-    icon: query,
+    by_name: query,
   },
 };
 

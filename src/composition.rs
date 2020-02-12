@@ -37,6 +37,7 @@ impl Composition {
 
 #[derive(Serialize, Deserialize)]
 pub enum Query {
-    #[serde(rename = "icon")]
-    Icon(String),
+    // search for a specific object
+    #[serde(rename = "by_name")]
+    ByName(String),
 }

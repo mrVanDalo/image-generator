@@ -63,10 +63,3 @@ fn render_image(path: &str, surface: &ImageSurface) {
         Err(_) => println!("Error create file.png"),
     }
 }
-
-// draw a path
-// -----------
-// context.move_to(x,y)
-// context.line_to(x,y)
-// context.curve_to(x0,y0,x1,y1,x, y); // curve to (x,y) with (x0,y0) as outgoing and (x1,y1) incoming curve
-// context.close_path();

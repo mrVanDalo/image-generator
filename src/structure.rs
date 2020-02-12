@@ -48,7 +48,7 @@ impl Structure {
     }
     pub fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
         match &query {
-            Query::Icon(icon) => match self.objects.get(icon) {
+            Query::ByName(name) => match self.objects.get(name) {
                 None => None,
                 Some(found) => match found {
                     Object::Line(line) => Some(Box::new(line)),
