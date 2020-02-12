@@ -50,8 +50,8 @@ pub struct Point {
 impl Rendable for Line {
     fn render(&self, context: &Context, _: &Querable) {
         // recover proper line size
-        let (_,y0) = context.device_to_user_distance(0.0,0.0);
-        let (_,y1) = context.device_to_user_distance(0.0,1.0);
+        let (_, y0) = context.device_to_user_distance(0.0, 0.0);
+        let (_, y1) = context.device_to_user_distance(0.0, 1.0);
         context.set_line_width(y1 - y0);
 
         // draw line
