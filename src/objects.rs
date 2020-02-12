@@ -1,4 +1,3 @@
-use crate::composition::Composition;
 use crate::rendable::Rendable;
 use crate::structure::Querable;
 use cairo::Context;
@@ -13,8 +12,8 @@ pub enum Object {
     Icon(Icon),
     #[serde(rename = "sequence")]
     Sequence(Sequence),
-    #[serde(rename = "composition")]
-    Composition(Composition),
+    #[serde(rename = "placement")]
+    Placement(Placement),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -29,7 +28,7 @@ impl Rendable for Sequence {
                 Object::Line(element) => element.render(&context, querable),
                 Object::Icon(element) => element.render(&context, querable),
                 Object::Sequence(element) => element.render(&context, querable),
-                Object::Composition(element) => element.render(&context, querable),
+                Object::Placement(element) => element.render(&context, querable),
             }
         }
     }
@@ -96,4 +95,51 @@ impl Icon {
         // todo
         // else return error
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Placement {
+    pub x: f64,
+    pub y: f64,
+    #[serde(default)]
+    pub angle: f64,
+    size: Option<f64>,
+    pub query: Query,
+}
+
+impl Placement {
+    pub fn size(&self) -> f64 {
+        match self.size {
+            Some(size) => size,
+            None => 100.0,
+        }
+    }
+}
+
+#[inline(always)]
+fn degree_to_radian(degree: f64) -> f64 {
+    degree * 0.017453293
+}
+
+impl Rendable for Placement {
+    fn render(&self, context: &Context, querable: &dyn Querable) {
+        context.save();
+        context.translate(self.x, self.y);
+        context.rotate(degree_to_radian(self.angle));
+        context.scale(0.01 * self.size(), 0.01 * self.size());
+
+        let rendable = querable.get_element_from_query(&self.query);
+        if rendable.is_some() {
+            rendable.unwrap().render(&context, querable);
+        }
+
+        context.restore();
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum Query {
+    // search for a specific object
+    #[serde(rename = "by_name")]
+    ByName(String),
 }

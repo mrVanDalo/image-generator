@@ -1,12 +1,8 @@
 // create a composition
 local composition(x, y, angle=0, size=100, query='head1') = {
-  placement: {
-    absolute: {
-      x: x,
-      y: y,
-      angle: angle,
-    },
-  },
+  x: x,
+  y: y,
+  angle: angle,
   size: size,
   query: {
     by_name: query,
@@ -42,8 +38,9 @@ local line(y, size=100, angle=0) =
     + {
       test:
         {
-          type: 'composition',
-          placement: { absolute: { x: 0, y: 0 } },
+          type: 'placement',
+          x: 0,
+          y: 0,
           size: 10,
           query: { by_name: 'x' },
         },

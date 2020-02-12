@@ -1,9 +1,8 @@
-use crate::composition::Composition;
-use crate::composition::Placement;
-use crate::composition::Query;
 use crate::objects::Line;
 use crate::objects::Object;
+use crate::objects::Placement;
 use crate::objects::Point;
+use crate::objects::Query;
 use crate::rendable::Rendable;
 use cairo::Context;
 use serde::{Deserialize, Serialize};
@@ -20,7 +19,7 @@ pub struct Structure {
     width: Option<i32>,
     height: Option<i32>,
     #[serde(default)]
-    pub compositions: Vec<Composition>,
+    pub compositions: Vec<Placement>,
     #[serde(default)]
     pub objects: HashMap<String, Object>,
 }
@@ -67,7 +66,7 @@ impl Querable for Structure {
                     Object::Line(element) => Some(Box::new(element)),
                     Object::Icon(element) => Some(Box::new(element)),
                     Object::Sequence(element) => Some(Box::new(element)),
-                    Object::Composition(element) => Some(Box::new(element)),
+                    Object::Placement(element) => Some(Box::new(element)),
                 },
             },
         }
@@ -76,26 +75,15 @@ impl Querable for Structure {
 
 impl Rendable for Structure {
     fn render(&self, context: &Context, querable: &dyn Querable) {
-        for composition in &self.compositions {
+        for placement in &self.compositions {
             context.save();
 
-            match composition.placement {
-                Placement::Absolute { x, y, angle } => {
-                    context.translate(x, y);
-                    context.rotate(degree_to_radian(angle));
-                }
-                Placement::Relative { x, y, angle } => {
-                    context.translate(
-                        x / 100.0 * f64::from(self.get_image_width()),
-                        y / 100.0 * f64::from(self.get_image_height()),
-                    );
-                    context.rotate(degree_to_radian(angle));
-                }
-            }
+            context.translate(placement.x, placement.y);
+            context.rotate(degree_to_radian(placement.angle));
 
-            context.scale(0.01 * composition.size(), 0.01 * composition.size());
+            context.scale(0.01 * placement.size(), 0.01 * placement.size());
 
-            let rendable = self.get_element_from_query(&composition.query);
+            let rendable = self.get_element_from_query(&placement.query);
             if rendable.is_some() {
                 rendable.unwrap().render(&context, querable);
             }
