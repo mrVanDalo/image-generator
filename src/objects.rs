@@ -9,6 +9,25 @@ pub enum Object {
     Line(Line),
     #[serde(rename = "icon")]
     Icon(Icon),
+    #[serde(rename = "sequence")]
+    Sequence(Sequence),
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Sequence {
+    objects: Vec<Object>,
+}
+
+impl Rendable for Sequence {
+    fn render(&self, context: &Context) {
+        for object in self.objects.iter() {
+            match object {
+                Object::Line(element) => element.render(&context),
+                Object::Icon(element) => element.render(&context),
+                Object::Sequence(element) => element.render(&context),
+            }
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]

@@ -51,8 +51,9 @@ impl Structure {
             Query::ByName(name) => match self.objects.get(name) {
                 None => None,
                 Some(found) => match found {
-                    Object::Line(line) => Some(Box::new(line)),
-                    Object::Icon(icon) => Some(Box::new(icon)),
+                    Object::Line(element) => Some(Box::new(element)),
+                    Object::Icon(element) => Some(Box::new(element)),
+                    Object::Sequence(element) => Some(Box::new(element)),
                 },
             },
         }
