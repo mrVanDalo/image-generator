@@ -1,7 +1,9 @@
 use crate::composition::Composition;
 use crate::composition::Placement;
 use crate::composition::Query;
-use crate::icon::Icon;
+use crate::objects::Line;
+use crate::objects::Object;
+use crate::objects::Point;
 use crate::rendable::Rendable;
 use cairo::Context;
 use serde::{Deserialize, Serialize};
@@ -17,8 +19,10 @@ const DEFAULT_HEIGHT: i32 = 100;
 pub struct Structure {
     width: Option<i32>,
     height: Option<i32>,
-    pub icons: HashMap<String, Icon>,
+    #[serde(default)]
     pub compositions: Vec<Composition>,
+    #[serde(default)]
+    pub objects: HashMap<String, Object>,
 }
 
 impl Structure {
@@ -44,12 +48,21 @@ impl Structure {
     }
     pub fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
         match &query {
-            Query::Icon(icon) => match self.icons.get(icon) {
+            Query::Icon(icon) => match self.objects.get(icon) {
                 None => None,
-                Some(icon) => Some(Box::new(icon)),
+                Some(found) => match found {
+                    Object::Line(line) => Some(Box::new(line)),
+                    Object::Icon(icon) => Some(Box::new(icon)),
+                },
             },
         }
     }
+}
+
+// $> units degree radian
+#[inline(always)]
+fn degree_to_radian(degree: f64) -> f64 {
+    degree * 0.017453293
 }
 
 impl Rendable for Structure {
@@ -58,11 +71,17 @@ impl Rendable for Structure {
             context.save();
 
             match composition.placement {
-                Placement::Absolute { x, y } => context.translate(x, y),
-                Placement::Relative { x, y } => context.translate(
-                    x / 100.0 * f64::from(self.get_image_width()),
-                    y / 100.0 * f64::from(self.get_image_height()),
-                ),
+                Placement::Absolute { x, y, angle } => {
+                    context.translate(x, y);
+                    context.rotate(degree_to_radian(angle));
+                }
+                Placement::Relative { x, y, angle } => {
+                    context.translate(
+                        x / 100.0 * f64::from(self.get_image_width()),
+                        y / 100.0 * f64::from(self.get_image_height()),
+                    );
+                    context.rotate(degree_to_radian(angle));
+                }
             }
 
             context.scale(0.01 * composition.size(), 0.01 * composition.size());

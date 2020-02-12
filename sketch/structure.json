@@ -39,7 +39,12 @@
       }
     }
   ],
-  "objects": {},
+  "objects": {
+    "some" : {
+      "type": "line"
+
+    }
+  },
   "icons": {
     "head1": {
       "path": [

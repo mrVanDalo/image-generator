@@ -6,12 +6,13 @@ use cairo::ImageSurface;
 use std::fs::File;
 
 mod composition;
-mod icon;
+mod objects;
 mod palette;
 mod rendable;
 mod structure;
 mod tag;
 
+use crate::objects::Object;
 use crate::palette::Palette;
 use crate::rendable::Rendable;
 use crate::structure::Structure;
@@ -48,6 +49,7 @@ fn main() {
         f64::from(palette.fill_color.green),
         f64::from(palette.fill_color.blue),
     );
+    context.set_line_width(1.0);
 
     structure.render(&context);
 

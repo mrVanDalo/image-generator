@@ -1,5 +1,6 @@
 {
   head1: {
+    type: 'icon',
     path: [
       [
         -50,

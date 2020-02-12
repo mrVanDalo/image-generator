@@ -10,9 +10,20 @@ pub struct Composition {
 #[derive(Serialize, Deserialize)]
 pub enum Placement {
     #[serde(rename = "absolute")]
-    Absolute { x: f64, y: f64 },
+    Absolute {
+        x: f64,
+        y: f64,
+        #[serde(default)]
+        angle: f64,
+    },
     #[serde(rename = "relative")]
-    Relative { x: f64, y: f64 },
+    Relative {
+        x: f64,
+        y: f64,
+
+        #[serde(default)]
+        angle: f64,
+    },
 }
 
 impl Composition {
