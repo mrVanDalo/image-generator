@@ -10,13 +10,14 @@ mod icon;
 mod palette;
 mod rendable;
 mod structure;
+mod tag;
 
 use crate::palette::Palette;
 use crate::rendable::Rendable;
 use crate::structure::Structure;
 
 fn main() {
-    let structure = Structure::load_from_file("./sketch/structure.json").unwrap();
+    let structure = Structure::load_from_file("./sketch/example.json").unwrap();
     let surface = ImageSurface::create(
         Format::Rgb24,
         structure.get_image_width(),

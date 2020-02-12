@@ -19,6 +19,7 @@ impl Palette {
         let value: f32 = f32::max(rng.gen(), 0.6);
         Rgb::from_linear(Hsv::new(hue, saturation, value).into_rgb())
     }
+    #[allow(dead_code)]
     pub fn bright_on_dark(input: Rgb) -> Palette {
         let tint_and_shade_palette = TintAndShadePalette::create(input);
         Palette {
@@ -26,6 +27,7 @@ impl Palette {
             fill_color: tint_and_shade_palette.inverse_saturation_tint_30,
         }
     }
+    #[allow(dead_code)]
     pub fn dark_on_bright(input: Rgb) -> Palette {
         let tint_and_shade_palette = TintAndShadePalette::create(input);
         Palette {
@@ -37,6 +39,7 @@ impl Palette {
 
 type ColorType = Rgb;
 
+#[allow(dead_code)]
 struct TintAndShadePalette {
     base_color: ColorType,
     base_tint_30: ColorType,

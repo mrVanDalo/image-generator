@@ -1,4 +1,5 @@
 use crate::composition::Composition;
+use crate::composition::Placement;
 use crate::composition::Query;
 use crate::icon::Icon;
 use crate::rendable::Rendable;
@@ -42,9 +43,8 @@ impl Structure {
         }
     }
     pub fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
-        match &query.icon {
-            None => None,
-            Some(icon) => match self.icons.get(icon) {
+        match &query {
+            Query::Icon(icon) => match self.icons.get(icon) {
                 None => None,
                 Some(icon) => Some(Box::new(icon)),
             },
@@ -56,7 +56,15 @@ impl Rendable for Structure {
     fn render(&self, context: &Context) {
         for composition in &self.compositions {
             context.save();
-            context.translate(composition.x, composition.y);
+
+            match composition.placement {
+                Placement::Absolute { x, y } => context.translate(x, y),
+                Placement::Relative { x, y } => context.translate(
+                    x / 100.0 * f64::from(self.get_image_width()),
+                    y / 100.0 * f64::from(self.get_image_height()),
+                ),
+            }
+
             context.scale(0.01 * composition.size(), 0.01 * composition.size());
 
             let rendable = self.get_element_from_query(&composition.query);

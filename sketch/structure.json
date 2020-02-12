@@ -1,41 +1,68 @@
 {
-  "width" : 600,
-  "height" : 600,
+  "width": 600,
+  "height": 600,
   "compositions": [
-      {
-      "x": 100,
-      "y": 100,
+    {
+      "placement": {
+        "absolute": {
+          "x": 100,
+          "y": 100
+        }
+      },
       "size": 50,
       "query": {
         "icon": "head1"
       }
+    },
+    {
+      "placement": {
+        "absolute": {
+          "x": 200,
+          "y": 100
+        }
       },
-      {
-      "x": 200,
-      "y": 100,
       "size": 100,
       "query": {
         "icon": "head1"
       }
+    },
+    {
+      "placement": {
+        "relative": {
+          "x": 50,
+          "y": 50
+        }
       },
-      {
-      "x": 300,
-      "y": 100,
       "size": 200,
       "query": {
         "icon": "head1"
       }
     }
   ],
-  "objects":{},
+  "objects": {},
   "icons": {
     "head1": {
-      "path": [ [-50,-50],
-                [50,0],
-                [-50,50],
-                [0,0]
-              ],
-      "tags":["arrow"]
+      "path": [
+        [
+          -50,
+          -50
+        ],
+        [
+          50,
+          0
+        ],
+        [
+          -50,
+          50
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "tags": [
+        "arrow"
+      ]
     }
   }
 }

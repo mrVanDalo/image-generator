@@ -2,10 +2,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Composition {
-    pub x: f64,
-    pub y: f64,
+    pub placement: Placement,
     size: Option<f64>,
     pub query: Query,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum Placement {
+    #[serde(rename = "absolute")]
+    Absolute { x: f64, y: f64 },
+    #[serde(rename = "relative")]
+    Relative { x: f64, y: f64 },
 }
 
 impl Composition {
@@ -18,6 +25,7 @@ impl Composition {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct Query {
-    pub icon: Option<String>,
+pub enum Query {
+    #[serde(rename = "icon")]
+    Icon(String),
 }
