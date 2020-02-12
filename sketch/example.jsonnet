@@ -1,5 +1,8 @@
+local width = 1366;
+local height = 768;
+
 // create a composition
-local composition(x, y, angle=0, size=100, query='head1') = {
+local composition(x=0, y=0, angle=0, size=100, query='head1') = {
   type: 'placement',
   x: x,
   y: y,
@@ -17,43 +20,63 @@ local line(y, size=100, angle=0) =
           std.map(function(x) x * size, std.range(-100, 100)));
 
 {
-  width: 600,
-  height: 600,
-  start: { by_name: 'main' },
+  width: width,
+  height: height,
+  start: { by_name: 'center' },
   objects:
-    { hrule: { type: 'line', a: { x: -1000, y: 0 }, b: { x: 10000, y: 0 } } }
-    + {
-      test:
+    {
+      hrule: { type: 'line', a: { x: -1000, y: 0 }, b: { x: 10000, y: 0 } },
+    } + {
+      center:
         {
           type: 'placement',
-          x: 0,
-          y: 0,
-          size: 10,
-          query: { by_name: 'x' },
+          x: width / 2,
+          y: height / 2,
+          size: 100,
+          query: { by_name: 'main' },
         },
-    }
-    + { x:
-      { type: 'sequence', objects: [
-        { type: 'line', a: { x: -50, y: -50 }, b: { x: 50, y: 50 } },
-        { type: 'line', a: { x: -50, y: 50 }, b: { x: 50, y: -50 } },
-      ] } }
-    + { main: {
-      type: 'sequence',
-      objects: [
-                 composition(x=300, y=300, query='x'),
-                 composition(x=300, y=100, query='test'),
-                 //composition(x=100, y=100, query='hrule'),
-                 //composition(x=100, y=200, query='hrule'),
-                 //composition(x=100, y=300, query='hrule'),
-                 //composition(x=100, y=400, query='hrule'),
-                 //composition(x=100, y=500, query='hrule'),
-               ]
-               //+ line(y=50, size=100, angle=180)
-               //+ line(y=150, size=100, angle=0)
-               //+ line(y=250, size=100, angle=180)
-               //+ line(y=350, size=100, angle=0)
-               //+ line(y=450, size=100, angle=180)
-               + line(y=550, size=100, angle=0),
-    } }
-    + icons,
+    } + {
+      x:
+        { type: 'sequence', objects: [
+          { type: 'line', a: { x: -50, y: -50 }, b: { x: 50, y: 50 } },
+          { type: 'line', a: { x: -50, y: 50 }, b: { x: 50, y: -50 } },
+        ] },
+    } + {
+      hline: {
+        type: 'sequence',
+        objects: [
+          composition(y=-30, size=20, query='harrow2'),
+          composition(y=-10, size=20, query='harrow'),
+          composition(y=10, size=20, query='harrow2'),
+          composition(y=30, size=20, query='harrow'),
+        ],
+      },
+    } + {
+      main: {
+        type: 'sequence',
+        objects: [
+          composition(y=5 * 80, query='hline'),
+          composition(y=4 * 80, query='hline'),
+          composition(y=3 * 80, query='hline'),
+          composition(y=2 * 80, query='hline'),
+          composition(y=1 * 80, query='hline'),
+          composition(y=0 * 80, query='hline'),
+          composition(y=-5 * 80, query='hline'),
+          composition(y=-4 * 80, query='hline'),
+          composition(y=-3 * 80, query='hline'),
+          composition(y=-2 * 80, query='hline'),
+          composition(y=-1 * 80, query='hline'),
+        ],
+      },
+    } + {
+      harrow: {
+        type: 'sequence',
+        objects: line(y=0, size=100),
+      },
+    } + {
+      harrow2: {
+        type: 'sequence',
+        objects: line(y=0, size=100, angle=180),
+      },
+    } + icons,
 }

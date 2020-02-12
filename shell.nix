@@ -1,36 +1,25 @@
 { pkgs ? import <nixpkgs> { } }:
-let
-
-  #taskwarrior-hooks = import ./default.nix {
-  #  inherit (pkgs) fetchFromGitHub stdenv rustPlatform;
-  #};
-
-in pkgs.mkShell {
+pkgs.mkShell {
 
   buildInputs = with pkgs; [
     rustc
     cargo
     rustfmt
-    # taskwarrior-hooks
 
     cairo
 
-    dhall
-    dhall-json
-
     jsonnet
+    (pkgs.writers.writeBashBin "run" ''
+      set -e
+      set -o pipefail
+      ${pkgs.jsonnet}/bin/jsonnet ${toString ./.}/sketch/example.jsonnet -o ./sketch/example.json
+      ${pkgs.cargo}/bin/cargo run && ${pkgs.feh}/bin/feh file.png && rm file.png
+    '')
 
     (pkgs.writers.writeBashBin "reformat" ''
       for file in `find ${toString ./.} -type f | egrep "\.rs$"`
       do
         ${pkgs.rustfmt}/bin/rustfmt "$file"
-      done
-
-      for file in `find ${toString ./.} -type f | egrep "\.dhall$"`
-      do
-        tmp_file=`mktemp`
-        cat "$file" | ${pkgs.dhall}/bin/dhall format > $tmp_file
-        mv $tmp_file "$file"
       done
 
       for file in `find ${toString ./.} -type f | egrep "\.jsonnet$"`
