@@ -18,8 +18,9 @@ const DEFAULT_HEIGHT: i32 = 100;
 pub struct Structure {
     width: Option<i32>,
     height: Option<i32>,
-    #[serde(default)]
-    pub compositions: Vec<Placement>,
+    //#[serde(default)]
+    //pub compositions: Vec<Placement>,
+    pub start: Query,
     #[serde(default)]
     pub objects: HashMap<String, Object>,
 }
@@ -75,20 +76,25 @@ impl Querable for Structure {
 
 impl Rendable for Structure {
     fn render(&self, context: &Context, querable: &dyn Querable) {
-        for placement in &self.compositions {
-            context.save();
-
-            context.translate(placement.x, placement.y);
-            context.rotate(degree_to_radian(placement.angle));
-
-            context.scale(0.01 * placement.size(), 0.01 * placement.size());
-
-            let rendable = self.get_element_from_query(&placement.query);
-            if rendable.is_some() {
-                rendable.unwrap().render(&context, querable);
-            }
-
-            context.restore();
+        let rendable = self.get_element_from_query(&self.start);
+        if rendable.is_some() {
+            rendable.unwrap().render(&context, querable);
         }
+
+        //for placement in &self.compositions {
+        //    context.save();
+
+        //    context.translate(placement.x, placement.y);
+        //    context.rotate(degree_to_radian(placement.angle));
+
+        //    context.scale(0.01 * placement.size(), 0.01 * placement.size());
+
+        //    let rendable = self.get_element_from_query(&placement.query);
+        //    if rendable.is_some() {
+        //        rendable.unwrap().render(&context, querable);
+        //    }
+
+        //    context.restore();
+        //}
     }
 }

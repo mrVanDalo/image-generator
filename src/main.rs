@@ -5,7 +5,7 @@ use cairo::ImageSurface;
 //use std::f64::consts::PI;
 use std::fs::File;
 
-mod composition;
+// mod composition;
 mod objects;
 mod palette;
 mod rendable;
