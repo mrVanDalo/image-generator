@@ -46,18 +46,6 @@ impl Structure {
             None => DEFAULT_HEIGHT,
         }
     }
-    pub fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
-        match &query {
-            Query::ByName(name) => match self.objects.get(name) {
-                None => None,
-                Some(found) => match found {
-                    Object::Line(element) => Some(Box::new(element)),
-                    Object::Icon(element) => Some(Box::new(element)),
-                    Object::Sequence(element) => Some(Box::new(element)),
-                },
-            },
-        }
-    }
 }
 
 // $> units degree radian
@@ -66,8 +54,28 @@ fn degree_to_radian(degree: f64) -> f64 {
     degree * 0.017453293
 }
 
+pub trait Querable {
+    fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>>;
+}
+
+impl Querable for Structure {
+    fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
+        match &query {
+            Query::ByName(name) => match self.objects.get(name) {
+                None => None,
+                Some(found) => match found {
+                    Object::Line(element) => Some(Box::new(element)),
+                    Object::Icon(element) => Some(Box::new(element)),
+                    Object::Sequence(element) => Some(Box::new(element)),
+                    Object::Composition(element) => Some(Box::new(element)),
+                },
+            },
+        }
+    }
+}
+
 impl Rendable for Structure {
-    fn render(&self, context: &Context) {
+    fn render(&self, context: &Context, querable: &dyn Querable) {
         for composition in &self.compositions {
             context.save();
 
@@ -89,7 +97,7 @@ impl Rendable for Structure {
 
             let rendable = self.get_element_from_query(&composition.query);
             if rendable.is_some() {
-                rendable.unwrap().render(&context);
+                rendable.unwrap().render(&context, querable);
             }
 
             context.restore();

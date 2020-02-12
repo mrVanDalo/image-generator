@@ -51,7 +51,7 @@ fn main() {
     );
     context.set_line_width(1.0);
 
-    structure.render(&context);
+    structure.render(&context, &structure);
 
     render_image("file.png", &surface);
 }

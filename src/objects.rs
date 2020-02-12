@@ -1,4 +1,6 @@
+use crate::composition::Composition;
 use crate::rendable::Rendable;
+use crate::structure::Querable;
 use cairo::Context;
 use serde::{Deserialize, Serialize};
 
@@ -11,6 +13,8 @@ pub enum Object {
     Icon(Icon),
     #[serde(rename = "sequence")]
     Sequence(Sequence),
+    #[serde(rename = "composition")]
+    Composition(Composition),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -19,12 +23,13 @@ pub struct Sequence {
 }
 
 impl Rendable for Sequence {
-    fn render(&self, context: &Context) {
+    fn render(&self, context: &Context, querable: &dyn Querable) {
         for object in self.objects.iter() {
             match object {
-                Object::Line(element) => element.render(&context),
-                Object::Icon(element) => element.render(&context),
-                Object::Sequence(element) => element.render(&context),
+                Object::Line(element) => element.render(&context, querable),
+                Object::Icon(element) => element.render(&context, querable),
+                Object::Sequence(element) => element.render(&context, querable),
+                Object::Composition(element) => element.render(&context, querable),
             }
         }
     }
@@ -43,7 +48,13 @@ pub struct Point {
 }
 
 impl Rendable for Line {
-    fn render(&self, context: &Context) {
+    fn render(&self, context: &Context, _: &Querable) {
+        // recover proper line size
+        let (_,y0) = context.device_to_user_distance(0.0,0.0);
+        let (_,y1) = context.device_to_user_distance(0.0,1.0);
+        context.set_line_width(y1 - y0);
+
+        // draw line
         context.move_to(self.a.x, self.a.y);
         context.line_to(self.b.x, self.b.y);
         context.stroke();
@@ -56,7 +67,7 @@ pub struct Icon {
 }
 
 impl Rendable for Icon {
-    fn render(&self, context: &Context) {
+    fn render(&self, context: &Context, _: &Querable) {
         let mut first = true;
         for path in self.path.iter() {
             if first {

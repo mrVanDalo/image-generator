@@ -17,6 +17,19 @@
          "placement": {
             "absolute": {
                "angle": 0,
+               "x": 300,
+               "y": 100
+            }
+         },
+         "query": {
+            "by_name": "test"
+         },
+         "size": 100
+      },
+      {
+         "placement": {
+            "absolute": {
+               "angle": 0,
                "x": -10000,
                "y": 550
             }
@@ -2663,6 +2676,19 @@
             "y": 0
          },
          "type": "line"
+      },
+      "test": {
+         "placement": {
+            "absolute": {
+               "x": 0,
+               "y": 0
+            }
+         },
+         "query": {
+            "by_name": "x"
+         },
+         "size": 10,
+         "type": "composition"
       },
       "x": {
          "objects": [
