@@ -1,6 +1,33 @@
 {
    "height": 768,
    "objects": {
+      "+": {
+         "objects": [
+            {
+               "a": {
+                  "x": -50,
+                  "y": 0
+               },
+               "b": {
+                  "x": 50,
+                  "y": 0
+               },
+               "type": "line"
+            },
+            {
+               "a": {
+                  "x": 0,
+                  "y": 50
+               },
+               "b": {
+                  "x": 0,
+                  "y": -50
+               },
+               "type": "line"
+            }
+         ],
+         "type": "sequence"
+      },
       "center": {
          "query": {
             "by_name": "main"
@@ -4231,6 +4258,26 @@
                "type": "placement",
                "x": 0,
                "y": -80
+            },
+            {
+               "angle": 0,
+               "query": {
+                  "by_name": "xo"
+               },
+               "size": 300,
+               "type": "placement",
+               "x": 0,
+               "y": 0
+            },
+            {
+               "angle": 0,
+               "query": {
+                  "by_name": "+"
+               },
+               "size": 100,
+               "type": "placement",
+               "x": 0,
+               "y": 0
             }
          ],
          "type": "sequence"
@@ -4258,6 +4305,22 @@
                   "y": -50
                },
                "type": "line"
+            }
+         ],
+         "type": "sequence"
+      },
+      "xo": {
+         "objects": [
+            {
+               "radius": 50,
+               "type": "circle"
+            },
+            {
+               "angle": 45,
+               "query": {
+                  "by_name": "+"
+               },
+               "type": "placement"
             }
          ],
          "type": "sequence"

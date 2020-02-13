@@ -5,9 +5,16 @@ use palette::Hsv;
 use palette::IntoColor;
 use rand::prelude::*;
 
+
 pub struct Palette {
     pub background_color: ColorType,
     pub fill_color: ColorType,
+}
+
+impl Default for Palette {
+    fn default() -> Self {
+        Palette::dark_on_bright(Palette::random_color())
+    }
 }
 
 impl Palette {

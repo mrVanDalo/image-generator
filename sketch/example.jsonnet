@@ -36,6 +36,12 @@ local line(y, size=100, angle=0) =
           query: { by_name: 'main' },
         },
     } + {
+      "+":
+        { type: 'sequence', objects: [
+          { type: 'line', a: { x: -50, y: 0 }, b: { x: 50, y: 0 } },
+          { type: 'line', a: { x: 0, y: 50 }, b: { x: 0, y: -50 } },
+        ] },
+    } + {
       x:
         { type: 'sequence', objects: [
           { type: 'line', a: { x: -50, y: -50 }, b: { x: 50, y: 50 } },
@@ -66,6 +72,23 @@ local line(y, size=100, angle=0) =
           composition(y=-3 * 80, query='hline'),
           composition(y=-2 * 80, query='hline'),
           composition(y=-1 * 80, query='hline'),
+          composition(size=300, query='xo'),
+          composition(query='+'),
+        ],
+      },
+    } + {
+      xo: {
+        type: 'sequence',
+        objects: [
+          {
+            type: 'circle',
+            radius: 50,
+          },
+          {
+            type: 'placement',
+            angle: 45,
+            query: { by_name: '+' },
+          },
         ],
       },
     } + {

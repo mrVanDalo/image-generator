@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 pub enum Object {
     #[serde(rename = "line")]
     Line(Line),
+    #[serde(rename = "circle")]
+    Circle(Circle),
     #[serde(rename = "icon")]
     Icon(Icon),
     #[serde(rename = "sequence")]
@@ -26,6 +28,7 @@ impl Rendable for Sequence {
         for object in self.objects.iter() {
             match object {
                 Object::Line(element) => element.render(&context, querable),
+                Object::Circle(element) => element.render(&context, querable),
                 Object::Icon(element) => element.render(&context, querable),
                 Object::Sequence(element) => element.render(&context, querable),
                 Object::Placement(element) => element.render(&context, querable),
@@ -57,6 +60,26 @@ impl Rendable for Line {
         context.move_to(self.a.x, self.a.y);
         context.line_to(self.b.x, self.b.y);
         context.stroke();
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Circle {
+    pub radius: f64,
+}
+
+impl Rendable for Circle {
+    fn render(&self, context: &Context, querable: &Querable) {
+        context.save();
+        let palette = querable.palette();
+        context.set_source_rgb(
+            f64::from(palette.background_color.red),
+            f64::from(palette.background_color.green),
+            f64::from(palette.background_color.blue),
+        );
+        context.arc(0.0, 0.0, self.radius, 0.0, 2.0 * std::f64::consts::PI);
+        context.fill();
+        context.restore();
     }
 }
 
@@ -99,7 +122,9 @@ impl Icon {
 
 #[derive(Serialize, Deserialize)]
 pub struct Placement {
+    #[serde(default)]
     pub x: f64,
+    #[serde(default)]
     pub y: f64,
     #[serde(default)]
     pub angle: f64,

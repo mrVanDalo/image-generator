@@ -16,6 +16,7 @@ use crate::objects::Object;
 use crate::palette::Palette;
 use crate::rendable::Rendable;
 use crate::structure::Structure;
+use crate::structure::Querable;
 
 fn main() {
     let structure = Structure::load_from_file("./sketch/example.json").unwrap();
@@ -27,7 +28,7 @@ fn main() {
     .expect("Can't create surface");
     let context = Context::new(&surface);
 
-    let palette = Palette::dark_on_bright(Palette::random_color());
+    let palette = structure.palette();
 
     // set background color
     context.set_source_rgb(

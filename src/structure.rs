@@ -3,6 +3,7 @@ use crate::objects::Object;
 use crate::objects::Placement;
 use crate::objects::Point;
 use crate::objects::Query;
+use crate::palette::Palette;
 use crate::rendable::Rendable;
 use cairo::Context;
 use serde::{Deserialize, Serialize};
@@ -18,11 +19,11 @@ const DEFAULT_HEIGHT: i32 = 100;
 pub struct Structure {
     width: Option<i32>,
     height: Option<i32>,
-    //#[serde(default)]
-    //pub compositions: Vec<Placement>,
     pub start: Query,
     #[serde(default)]
     pub objects: HashMap<String, Object>,
+    #[serde(default,skip)]
+    palette: Palette,
 }
 
 impl Structure {
@@ -56,6 +57,8 @@ fn degree_to_radian(degree: f64) -> f64 {
 
 pub trait Querable {
     fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>>;
+    // todo: does not belong here, or rename the trait to ImageContext or something
+    fn palette(&self) -> &Palette;
 }
 
 impl Querable for Structure {
@@ -66,11 +69,15 @@ impl Querable for Structure {
                 Some(found) => match found {
                     Object::Line(element) => Some(Box::new(element)),
                     Object::Icon(element) => Some(Box::new(element)),
+                    Object::Circle(element) => Some(Box::new(element)),
                     Object::Sequence(element) => Some(Box::new(element)),
                     Object::Placement(element) => Some(Box::new(element)),
                 },
             },
         }
+    }
+    fn palette(&self) -> &Palette {
+        &self.palette
     }
 }
 
@@ -80,21 +87,5 @@ impl Rendable for Structure {
         if rendable.is_some() {
             rendable.unwrap().render(&context, querable);
         }
-
-        //for placement in &self.compositions {
-        //    context.save();
-
-        //    context.translate(placement.x, placement.y);
-        //    context.rotate(degree_to_radian(placement.angle));
-
-        //    context.scale(0.01 * placement.size(), 0.01 * placement.size());
-
-        //    let rendable = self.get_element_from_query(&placement.query);
-        //    if rendable.is_some() {
-        //        rendable.unwrap().render(&context, querable);
-        //    }
-
-        //    context.restore();
-        //}
     }
 }
