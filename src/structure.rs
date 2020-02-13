@@ -67,11 +67,12 @@ impl Querable for Structure {
             Query::ByName(name) => match self.objects.get(name) {
                 None => None,
                 Some(found) => match found {
-                    Object::Line(element) => Some(Box::new(element)),
-                    Object::Icon(element) => Some(Box::new(element)),
                     Object::Circle(element) => Some(Box::new(element)),
-                    Object::Sequence(element) => Some(Box::new(element)),
+                    Object::Icon(element) => Some(Box::new(element)),
+                    Object::Line(element) => Some(Box::new(element)),
                     Object::Placement(element) => Some(Box::new(element)),
+                    Object::Sequence(element) => Some(Box::new(element)),
+                    Object::Spline(element) => Some(Box::new(element)),
                 },
             },
         }

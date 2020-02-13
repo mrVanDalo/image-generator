@@ -16,6 +16,8 @@ pub enum Object {
     Sequence(Sequence),
     #[serde(rename = "placement")]
     Placement(Placement),
+    #[serde(rename = "spline")]
+    Spline(Spline),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -27,11 +29,12 @@ impl Rendable for Sequence {
     fn render(&self, context: &Context, querable: &dyn Querable) {
         for object in self.objects.iter() {
             match object {
-                Object::Line(element) => element.render(&context, querable),
                 Object::Circle(element) => element.render(&context, querable),
                 Object::Icon(element) => element.render(&context, querable),
-                Object::Sequence(element) => element.render(&context, querable),
+                Object::Line(element) => element.render(&context, querable),
                 Object::Placement(element) => element.render(&context, querable),
+                Object::Sequence(element) => element.render(&context, querable),
+                Object::Spline(element) => element.render(&context, querable),
             }
         }
     }
@@ -59,6 +62,32 @@ impl Rendable for Line {
         // draw line
         context.move_to(self.a.x, self.a.y);
         context.line_to(self.b.x, self.b.y);
+        context.stroke();
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Spline{
+    pub a: Point,
+    pub b: Point,
+    pub sa: Point,
+    pub sb: Point,
+}
+
+impl Rendable for Spline {
+    fn render(&self, context: &Context, _: &Querable) {
+        // recover proper line size
+        let (_, y0) = context.device_to_user_distance(0.0, 0.0);
+        let (_, y1) = context.device_to_user_distance(0.0, 1.0);
+        context.set_line_width(y1 - y0);
+
+        // draw line
+        context.move_to(self.a.x, self.a.y);
+        context.curve_to(
+            self.sa.x, self.sa.y,
+            self.sb.x, self.sb.y,
+            self.b.x, self.b.y
+        );
         context.stroke();
     }
 }
