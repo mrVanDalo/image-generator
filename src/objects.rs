@@ -67,7 +67,7 @@ impl Rendable for Line {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct Spline{
+pub struct Spline {
     pub a: Point,
     pub b: Point,
     pub sa: Point,
@@ -84,9 +84,7 @@ impl Rendable for Spline {
         // draw line
         context.move_to(self.a.x, self.a.y);
         context.curve_to(
-            self.sa.x, self.sa.y,
-            self.sb.x, self.sb.y,
-            self.b.x, self.b.y
+            self.sa.x, self.sa.y, self.sb.x, self.sb.y, self.b.x, self.b.y,
         );
         context.stroke();
     }

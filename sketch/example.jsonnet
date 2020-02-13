@@ -36,7 +36,7 @@ local line(y, size=100, angle=0) =
           query: { by_name: 'main' },
         },
     } + {
-      "+":
+      '+':
         { type: 'sequence', objects: [
           { type: 'line', a: { x: -50, y: 0 }, b: { x: 50, y: 0 } },
           { type: 'line', a: { x: 0, y: 50 }, b: { x: 0, y: -50 } },

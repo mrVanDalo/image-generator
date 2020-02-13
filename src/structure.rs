@@ -22,7 +22,7 @@ pub struct Structure {
     pub start: Query,
     #[serde(default)]
     pub objects: HashMap<String, Object>,
-    #[serde(default,skip)]
+    #[serde(default, skip)]
     palette: Palette,
 }
 
