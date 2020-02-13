@@ -52,17 +52,23 @@ pub struct Point {
     pub y: f64,
 }
 
+
+#[inline(always)]
+fn stroke_and_preserve_line_width(context: &Context){
+    // todo: just add this function to context
+    context.save();
+    context.identity_matrix();
+    context.stroke();
+    context.restore();
+}
+
+
 impl Rendable for Line {
     fn render(&self, context: &Context, _: &Querable) {
-        // recover proper line size
-        let (_, y0) = context.device_to_user_distance(0.0, 0.0);
-        let (_, y1) = context.device_to_user_distance(0.0, 1.0);
-        context.set_line_width(y1 - y0);
-
         // draw line
         context.move_to(self.a.x, self.a.y);
         context.line_to(self.b.x, self.b.y);
-        context.stroke();
+        stroke_and_preserve_line_width(context);
     }
 }
 
@@ -76,17 +82,12 @@ pub struct Spline {
 
 impl Rendable for Spline {
     fn render(&self, context: &Context, _: &Querable) {
-        // recover proper line size
-        let (_, y0) = context.device_to_user_distance(0.0, 0.0);
-        let (_, y1) = context.device_to_user_distance(0.0, 1.0);
-        context.set_line_width(y1 - y0);
-
         // draw line
         context.move_to(self.a.x, self.a.y);
         context.curve_to(
             self.sa.x, self.sa.y, self.sb.x, self.sb.y, self.b.x, self.b.y,
         );
-        context.stroke();
+        stroke_and_preserve_line_width(context);
     }
 }
 
