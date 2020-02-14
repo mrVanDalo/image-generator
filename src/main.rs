@@ -46,7 +46,7 @@ fn main() {
         f64::from(palette.fill_color.green),
         f64::from(palette.fill_color.blue),
     );
-    context.set_line_width(1.0);
+    context.set_line_width(structure.line_size);
 
     context.translate(
         f64::from(structure.width) / 2.0,

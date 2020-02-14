@@ -20,6 +20,8 @@ pub struct Structure {
     pub start: Query,
     #[serde(default = "Structure::default_color_scheme")]
     pub color_scheme: ColorScheme,
+    #[serde(default = "Structure::default_line_size")]
+    pub line_size: f64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -39,6 +41,9 @@ impl Structure {
     }
     fn default_height() -> i32 {
         100
+    }
+    fn default_line_size() -> f64 {
+        1.0
     }
     pub fn load_from_file(path: &str) -> Result<Structure, Box<dyn Error>> {
         let file = File::open(path)?;

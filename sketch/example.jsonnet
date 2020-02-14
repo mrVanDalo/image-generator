@@ -18,6 +18,7 @@ local grid(query) =
   height: 768,
   start: { by_name: 'main' },
   color_scheme: 'bright_on_dark',
+  line_size: 3,
 
   objects: {
     main: {
