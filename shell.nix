@@ -10,10 +10,13 @@ pkgs.mkShell {
 
     jsonnet
     (pkgs.writers.writeBashBin "run" ''
+      input="$1"
       set -e
       set -o pipefail
-      ${pkgs.jsonnet}/bin/jsonnet ${toString ./.}/sketch/example.jsonnet -o ./sketch/example.json
-      ${pkgs.cargo}/bin/cargo run && ${pkgs.feh}/bin/feh file.png && rm file.png
+      ${pkgs.jsonnet}/bin/jsonnet "$input" -o ${toString ./.}/.example.json
+      ${pkgs.cargo}/bin/cargo run -- --output ${toString ./.}/.example.png ${toString ./.}/.example.json
+      ${pkgs.feh}/bin/feh ${toString ./.}/.example.png
+      rm ${toString ./.}/.example.png
     '')
 
     (pkgs.writers.writeBashBin "reformat" ''

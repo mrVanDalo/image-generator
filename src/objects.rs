@@ -25,6 +25,7 @@ pub enum Object {
     // - angle
     // - size // todo : rename scale
     // - tags
+    // - stop when scale is to small
     #[serde(rename = "sequence")]
     Sequence(Sequence),
     #[serde(rename = "placement")]
@@ -77,8 +78,16 @@ pub struct Sequence {
 impl Rendable for Sequence {
     fn render(&self, context: &Context, image_context: &ImageContext) {
         context.save();
+
         context.rotate(degree_to_radian(self.angle));
         context.scale(0.01 * self.size, 0.01 * self.size);
+
+        // stop rendering when scale is to small
+        let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
+        let (x1, y1) = context.user_to_device_distance(0.0, 0.0);
+        if f64::sqrt((x1 - x0).powi(2) + (y1 - y0).powi(2)) < 0.3 {
+            return ();
+        }
 
         for object in self.objects.iter() {
             match object {
@@ -129,6 +138,13 @@ impl Rendable for Placement {
 
         context.rotate(degree_to_radian(self.angle));
         context.scale(0.01 * self.size, 0.01 * self.size);
+
+        // stop rendering when scale is to small
+        let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
+        let (x1, y1) = context.user_to_device_distance(0.0, 0.0);
+        if f64::sqrt((x1 - x0).powi(2) + (y1 - y0).powi(2)) < 0.3 {
+            return ();
+        }
 
         let rendable = image_context.get_element_from_query(&self.query);
         if rendable.is_some() {

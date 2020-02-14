@@ -28,17 +28,31 @@ local grid(query) =
       ],
     },
 
-    filling_grid: grid(query={ by_tag: ['filling'] }),
+    filling_grid: grid(query={ by_tag: ['+', '-'] }),
     eye: {
       type: 'sequence',
-      tags: ['filling'],
+      tags: ['+'],
       objects: [
         { type: 'ring', radius: 25 },
       ],
     },
+    eye2: {
+      type: 'sequence',
+      tags: ['-'],
+      objects: [
+        { type: 'icon', path: [
+          [-51, 0],
+          [0, -51],
+          [51, 0],
+          [0, 51],
+        ] },
+        { type: 'ring', radius: 25, color: 'background' },
+      ],
+    },
+
     cross: {
       type: 'sequence',
-      tags: ['filling'],
+      tags: ['+'],
       objects: [
         {
           type: 'line',
@@ -49,6 +63,30 @@ local grid(query) =
           type: 'line',
           a: { x: -30 },
           b: { x: 30 },
+        },
+      ],
+    },
+    cross2: {
+      type: 'sequence',
+      tags: ['-'],
+      objects: [
+        { type: 'icon', path: [
+          [-51, 0],
+          [0, -51],
+          [51, 0],
+          [0, 51],
+        ] },
+        {
+          type: 'line',
+          a: { y: -30 },
+          b: { y: 30 },
+          color: 'background',
+        },
+        {
+          type: 'line',
+          a: { x: -30 },
+          b: { x: 30 },
+          color: 'background',
         },
       ],
     },
