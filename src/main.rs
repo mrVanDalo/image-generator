@@ -22,7 +22,7 @@ fn main() {
 
     let context = Context::new(&surface);
 
-    let image_context = ImageContext::new(&structure.objects);
+    let image_context = ImageContext::new(&structure);
 
     let palette = image_context.palette();
 

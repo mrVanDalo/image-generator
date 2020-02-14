@@ -17,14 +17,15 @@ local grid(query) =
   width: 1366,
   height: 768,
   start: { by_name: 'main' },
+  color_scheme: 'bright_on_dark',
 
   objects: {
     main: {
       type: 'sequence',
       objects: [
-      { type: 'placement', query: { by_name: 'background_grid' } },
-      { type: 'placement', query: { by_name: 'filling_grid' } },
-      { type: 'placement', x: 50, y: 50, query: { by_name: 'filling_grid' } }
+        { type: 'placement', query: { by_name: 'background_grid' } },
+        { type: 'placement', query: { by_name: 'filling_grid' } },
+        { type: 'placement', x: 50, y: 50, query: { by_name: 'filling_grid' } },
       ],
     },
 

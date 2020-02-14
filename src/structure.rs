@@ -1,8 +1,4 @@
-//use crate::objects::Line;
 use crate::objects::Object;
-//use crate::objects::Placement;
-//use crate::objects::Point;
-//use crate::objects::Query;
 use crate::palette::Palette;
 use crate::rendable::Rendable;
 use cairo::Context;
@@ -22,9 +18,22 @@ pub struct Structure {
     #[serde(default)]
     pub objects: HashMap<String, Object>,
     pub start: Query,
+    #[serde(default = "Structure::default_color_scheme")]
+    pub color_scheme: ColorScheme,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum ColorScheme {
+    #[serde(rename = "dark_on_bright")]
+    DarkOnBright,
+    #[serde(rename = "bright_on_dark")]
+    BrightOnDark,
 }
 
 impl Structure {
+    fn default_color_scheme() -> ColorScheme {
+        ColorScheme::DarkOnBright
+    }
     fn default_width() -> i32 {
         100
     }
@@ -67,9 +76,9 @@ pub struct ImageContext<'a> {
 }
 
 impl ImageContext<'_> {
-    pub fn new(objects: &HashMap<String, Object>) -> ImageContext {
+    pub fn new(structure: &Structure) -> ImageContext {
         let mut tags_map: HashMap<&String, Vec<&Object>> = HashMap::new();
-        for object in objects.values() {
+        for object in structure.objects.values() {
             let tags = object.get_tags();
             for tag in tags.iter() {
                 match tags_map.get_mut(tag) {
@@ -82,10 +91,16 @@ impl ImageContext<'_> {
                 }
             }
         }
+
+        let palette = match &structure.color_scheme {
+            ColorScheme::DarkOnBright => Palette::dark_on_bright(Palette::random_color()),
+            ColorScheme::BrightOnDark => Palette::bright_on_dark(Palette::random_color()),
+        };
+
         ImageContext {
-            objects: &objects,
+            objects: &structure.objects,
             tags: tags_map,
-            palette: Palette::dark_on_bright(Palette::random_color()),
+            palette: palette,
         }
     }
 

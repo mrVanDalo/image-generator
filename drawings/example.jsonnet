@@ -22,9 +22,9 @@ local grid(query) =
     main: {
       type: 'sequence',
       objects: [
-      { type: 'placement', query: { by_name: 'background_grid' } },
-      { type: 'placement', query: { by_name: 'filling_grid' } },
-      { type: 'placement', x: 50, y: 50, query: { by_name: 'filling_grid' } }
+        { type: 'placement', query: { by_name: 'background_grid' } },
+        { type: 'placement', query: { by_name: 'filling_grid' } },
+        { type: 'placement', x: 50, y: 50, query: { by_name: 'filling_grid' } },
       ],
     },
 
