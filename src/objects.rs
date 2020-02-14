@@ -1,5 +1,6 @@
 use crate::rendable::Rendable;
-use crate::structure::Querable;
+use crate::structure::ImageContext;
+use crate::structure::Query;
 use cairo::Context;
 use serde::{Deserialize, Serialize};
 
@@ -23,6 +24,7 @@ pub enum Object {
     // containers should have:
     // - angle
     // - size // todo : rename scale
+    // - tags
     #[serde(rename = "sequence")]
     Sequence(Sequence),
     #[serde(rename = "placement")]
@@ -30,6 +32,7 @@ pub enum Object {
 
     // empty drawing elements
     // - color
+    // - tags
     #[serde(rename = "line")]
     Line(Line),
     #[serde(rename = "spline")]
@@ -39,10 +42,25 @@ pub enum Object {
 
     // filled drawing elements
     // - color
+    // - tags
     #[serde(rename = "circle")]
     Circle(Circle),
     #[serde(rename = "icon")]
     Icon(Icon),
+}
+
+impl Object {
+    pub fn get_tags(&self) -> &Vec<String> {
+        match &self {
+            Object::Circle(element) => &element.tags,
+            Object::Icon(element) => &element.tags,
+            Object::Line(element) => &element.tags,
+            Object::Placement(element) => &element.tags,
+            Object::Ring(element) => &element.tags,
+            Object::Sequence(element) => &element.tags,
+            Object::Spline(element) => &element.tags,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -52,23 +70,25 @@ pub struct Sequence {
     pub angle: f64,
     #[serde(default = "Placement::default_size")]
     pub size: f64,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 impl Rendable for Sequence {
-    fn render(&self, context: &Context, querable: &dyn Querable) {
+    fn render(&self, context: &Context, image_context: &ImageContext) {
         context.save();
         context.rotate(degree_to_radian(self.angle));
         context.scale(0.01 * self.size, 0.01 * self.size);
 
         for object in self.objects.iter() {
             match object {
-                Object::Circle(element) => element.render(&context, querable),
-                Object::Icon(element) => element.render(&context, querable),
-                Object::Line(element) => element.render(&context, querable),
-                Object::Placement(element) => element.render(&context, querable),
-                Object::Ring(element) => element.render(&context, querable),
-                Object::Sequence(element) => element.render(&context, querable),
-                Object::Spline(element) => element.render(&context, querable),
+                Object::Circle(element) => element.render(&context, image_context),
+                Object::Icon(element) => element.render(&context, image_context),
+                Object::Line(element) => element.render(&context, image_context),
+                Object::Placement(element) => element.render(&context, image_context),
+                Object::Ring(element) => element.render(&context, image_context),
+                Object::Sequence(element) => element.render(&context, image_context),
+                Object::Spline(element) => element.render(&context, image_context),
             }
         }
         context.restore();
@@ -86,6 +106,8 @@ pub struct Placement {
     #[serde(default = "Placement::default_size")]
     pub size: f64,
     pub query: Query,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 impl Placement {
@@ -100,7 +122,7 @@ fn degree_to_radian(degree: f64) -> f64 {
 }
 
 impl Rendable for Placement {
-    fn render(&self, context: &Context, querable: &dyn Querable) {
+    fn render(&self, context: &Context, image_context: &ImageContext) {
         context.save();
 
         context.translate(self.x, self.y);
@@ -108,19 +130,13 @@ impl Rendable for Placement {
         context.rotate(degree_to_radian(self.angle));
         context.scale(0.01 * self.size, 0.01 * self.size);
 
-        let rendable = querable.get_element_from_query(&self.query);
+        let rendable = image_context.get_element_from_query(&self.query);
         if rendable.is_some() {
-            rendable.unwrap().render(&context, querable);
+            rendable.unwrap().render(&context, image_context);
         }
 
         context.restore();
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum Query {
-    #[serde(rename = "by_name")]
-    ByName(String),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -131,6 +147,8 @@ pub struct Line {
     pub b: Point,
     #[serde(default = "Color::default")]
     pub color: Color,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -148,8 +166,8 @@ impl Default for Point {
 }
 
 impl Rendable for Line {
-    fn render(&self, context: &Context, querable: &dyn Querable) {
-        self.configure_color(&self.color, context, querable);
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        self.configure_color(&self.color, context, image_context);
 
         // draw line
         context.move_to(self.a.x, self.a.y);
@@ -167,11 +185,13 @@ pub struct Spline {
     pub sb: Point,
     #[serde(default = "Color::default")]
     pub color: Color,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 impl Rendable for Spline {
-    fn render(&self, context: &Context, querable: &dyn Querable) {
-        self.configure_color(&self.color, context, querable);
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        self.configure_color(&self.color, context, image_context);
 
         // draw line
         context.move_to(self.a.x, self.a.y);
@@ -189,6 +209,8 @@ pub struct Ring {
     pub radius: f64,
     #[serde(default = "Color::default")]
     pub color: Color,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 impl Ring {
@@ -198,8 +220,8 @@ impl Ring {
 }
 
 impl Rendable for Ring {
-    fn render(&self, context: &Context, querable: &dyn Querable) {
-        self.configure_color(&self.color, context, querable);
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        self.configure_color(&self.color, context, image_context);
         context.arc(0.0, 0.0, self.radius, 0.0, 2.0 * std::f64::consts::PI);
         self.stroke_and_preserve_line_width(&context);
     }
@@ -211,6 +233,8 @@ pub struct Circle {
     pub radius: f64,
     #[serde(default = "Color::default")]
     pub color: Color,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 impl Circle {
@@ -220,8 +244,8 @@ impl Circle {
 }
 
 impl Rendable for Circle {
-    fn render(&self, context: &Context, querable: &dyn Querable) {
-        self.configure_color(&self.color, context, querable);
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        self.configure_color(&self.color, context, image_context);
         context.arc(0.0, 0.0, self.radius, 0.0, 2.0 * std::f64::consts::PI);
         context.fill();
     }
@@ -232,11 +256,13 @@ pub struct Icon {
     path: Vec<Vec<f64>>,
     #[serde(default = "Color::default")]
     pub color: Color,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 impl Rendable for Icon {
-    fn render(&self, context: &Context, querable: &dyn Querable) {
-        self.configure_color(&self.color, context, querable);
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        self.configure_color(&self.color, context, image_context);
 
         let mut first = true;
         for path in self.path.iter() {

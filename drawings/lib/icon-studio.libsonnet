@@ -54,9 +54,7 @@ local text(text) = {
           center:
             {
               type: 'placement',
-              x: width / 2 - 200,
-              y: height / 2,
-              size: 100,
+              x: -200,
               query: { by_name: 'main' },
             },
           main: {

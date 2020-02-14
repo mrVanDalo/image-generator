@@ -2,33 +2,29 @@ use cairo::Context;
 use cairo::Format;
 use cairo::ImageSurface;
 
-//use std::f64::consts::PI;
 use std::fs::File;
 
-// mod composition;
 mod objects;
 mod palette;
 mod rendable;
 mod structure;
 mod tag;
 
-//use crate::objects::Object;
-//use crate::palette::Palette;
 use crate::rendable::Rendable;
-use crate::structure::Querable;
+use crate::structure::ImageContext;
 use crate::structure::Structure;
 
 fn main() {
     let structure = Structure::load_from_file("./sketch/example.json").unwrap();
-    let surface = ImageSurface::create(
-        Format::Rgb24,
-        structure.get_image_width(),
-        structure.get_image_height(),
-    )
-    .expect("Can't create surface");
+
+    let surface = ImageSurface::create(Format::Rgb24, structure.width, structure.height)
+        .expect("Can't create surface");
+
     let context = Context::new(&surface);
 
-    let palette = structure.palette();
+    let image_context = ImageContext::new(&structure.objects);
+
+    let palette = image_context.palette();
 
     // set background color
     context.set_source_rgb(
@@ -39,8 +35,8 @@ fn main() {
     context.rectangle(
         0.,
         0.,
-        f64::from(structure.get_image_width()),
-        f64::from(structure.get_image_height()),
+        f64::from(structure.width),
+        f64::from(structure.height),
     );
     context.fill();
 
@@ -52,7 +48,11 @@ fn main() {
     );
     context.set_line_width(1.0);
 
-    structure.render(&context, &structure);
+    context.translate(
+        f64::from(structure.width) / 2.0,
+        f64::from(structure.height) / 2.0,
+    );
+    structure.render(&context, &image_context);
 
     render_image("file.png", &surface);
 }

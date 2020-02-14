@@ -1,14 +1,14 @@
 use crate::objects::Color;
-use crate::structure::Querable;
+use crate::structure::ImageContext;
 use cairo::Context;
 
 pub trait Rendable {
-    fn render(&self, context: &Context, querable: &dyn Querable);
+    fn render(&self, context: &Context, image_context: &ImageContext);
 
-    fn configure_color(&self, color: &Color, context: &Context, querable: &dyn Querable) {
+    fn configure_color(&self, color: &Color, context: &Context, image_context: &ImageContext) {
         match &color {
             Color::Fill => {
-                let palette = querable.palette();
+                let palette = image_context.palette();
                 context.set_source_rgb(
                     f64::from(palette.fill_color.red),
                     f64::from(palette.fill_color.green),
@@ -16,7 +16,7 @@ pub trait Rendable {
                 );
             }
             Color::Background => {
-                let palette = querable.palette();
+                let palette = image_context.palette();
                 context.set_source_rgb(
                     f64::from(palette.background_color.red),
                     f64::from(palette.background_color.green),
