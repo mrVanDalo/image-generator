@@ -12,8 +12,8 @@ mod rendable;
 mod structure;
 mod tag;
 
-use crate::objects::Object;
-use crate::palette::Palette;
+//use crate::objects::Object;
+//use crate::palette::Palette;
 use crate::rendable::Rendable;
 use crate::structure::Querable;
 use crate::structure::Structure;

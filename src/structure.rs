@@ -1,7 +1,7 @@
-use crate::objects::Line;
+//use crate::objects::Line;
 use crate::objects::Object;
-use crate::objects::Placement;
-use crate::objects::Point;
+//use crate::objects::Placement;
+//use crate::objects::Point;
 use crate::objects::Query;
 use crate::palette::Palette;
 use crate::rendable::Rendable;
@@ -71,6 +71,7 @@ impl Querable for Structure {
                     Object::Icon(element) => Some(Box::new(element)),
                     Object::Line(element) => Some(Box::new(element)),
                     Object::Placement(element) => Some(Box::new(element)),
+                    Object::Ring(element) => Some(Box::new(element)),
                     Object::Sequence(element) => Some(Box::new(element)),
                     Object::Spline(element) => Some(Box::new(element)),
                 },
