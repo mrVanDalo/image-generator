@@ -30,6 +30,8 @@ pub enum Object {
     Sequence(Sequence),
     #[serde(rename = "placement")]
     Placement(Placement),
+    #[serde(rename = "sun")]
+    Sun(Sun),
 
     // empty drawing elements
     // - color
@@ -60,6 +62,7 @@ impl Object {
             Object::Ring(element) => &element.tags,
             Object::Sequence(element) => &element.tags,
             Object::Spline(element) => &element.tags,
+            Object::Sun(element) => &element.tags,
         }
     }
 }
@@ -103,6 +106,7 @@ impl Rendable for Sequence {
                 Object::Ring(element) => element.render(&context, image_context),
                 Object::Sequence(element) => element.render(&context, image_context),
                 Object::Spline(element) => element.render(&context, image_context),
+                Object::Sun(element) => element.render(&context, image_context),
             }
         }
         context.restore();
@@ -153,6 +157,78 @@ impl Rendable for Placement {
         let rendable = image_context.get_element_from_query(&self.query);
         if rendable.is_some() {
             rendable.unwrap().render(&context, image_context);
+        }
+
+        context.restore();
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Sun {
+    #[serde(default)]
+    pub x: f64,
+    #[serde(default)]
+    pub y: f64,
+    #[serde(default)]
+    pub angle: f64,
+    #[serde(default = "Sun::default_size")]
+    pub size: f64,
+    #[serde(default = "Sun::default_radius")]
+    pub radius: f64,
+
+    #[serde(default = "Sun::default_segments")]
+    pub segments: i32,
+
+    pub query: Query,
+
+    #[serde(default)]
+    pub tags: Vec<String>,
+}
+
+impl Sun {
+    fn default_size() -> f64 {
+        100.0
+    }
+    fn default_radius() -> f64 {
+        100.0
+    }
+    fn default_segments() -> i32 {
+        8
+    }
+}
+
+impl Rendable for Sun {
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        context.save();
+
+        context.translate(self.x, self.y);
+        context.rotate(degree_to_radian(self.angle));
+
+        // stop rendering when scale is to small
+        let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
+        let (x1, y1) = context.user_to_device_distance(0.0, 0.0);
+        if f64::sqrt((x1 - x0).powi(2) + (y1 - y0).powi(2)) < 0.3 {
+            return ();
+        }
+
+        let segment_rotation_factor = (2.0 * std::f64::consts::PI) / f64::from(self.segments);
+        for segment in (std::ops::Range {
+            start: 0,
+            end: self.segments,
+        }) {
+            context.save();
+
+            context.rotate(f64::from(segment) * segment_rotation_factor);
+            context.translate(self.radius, 0.0);
+            context.rotate(degree_to_radian(90.0));
+            context.scale(0.01 * self.size, 0.01 * self.size);
+
+            let rendable = image_context.get_element_from_query(&self.query);
+            if rendable.is_some() {
+                rendable.unwrap().render(&context, image_context);
+            }
+
+            context.restore();
         }
 
         context.restore();

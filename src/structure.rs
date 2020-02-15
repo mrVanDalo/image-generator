@@ -118,6 +118,7 @@ impl ImageContext<'_> {
             Object::Ring(element) => Some(Box::new(element)),
             Object::Sequence(element) => Some(Box::new(element)),
             Object::Spline(element) => Some(Box::new(element)),
+            Object::Sun(element) => Some(Box::new(element)),
         }
     }
 
