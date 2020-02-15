@@ -1,13 +1,32 @@
+//!# Everything you can name in `input.json`
+//!
+//!These are alle the objects you can use
+//!in the `input.json`
+//!
+//!Everything in the Object enum can be used in the `objects` field
+//!of you `input.json`.
+//!
+//!
+//!
+//!
+
 use crate::rendable::Rendable;
 use crate::structure::ImageContext;
 use crate::structure::Query;
 use cairo::Context;
 use serde::{Deserialize, Serialize};
 
+
+/// Configures the color to use from the palette to draw.
+/// (default is `fill`)
 #[derive(Serialize, Deserialize)]
 pub enum Color {
+
+    /// Use the background color from the palette to draw.
     #[serde(rename = "background")]
     Background,
+
+    /// Use the `fill` color from the palette to draw.
     #[serde(rename = "fill")]
     Fill,
 }
@@ -18,41 +37,63 @@ impl Color {
     }
 }
 
+/// All object types which can be used
+/// in your `input.json`.
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Object {
+
     // containers should have:
     // - angle
     // - size // todo : rename scale
     // - tags
     // - stop when scale is to small
+
+    /// A container to draw multiple objects in row.
     #[serde(rename = "sequence")]
     Sequence(Sequence),
+
+    /// A container to draw another object.
     #[serde(rename = "placement")]
     Placement(Placement),
+
+    /// A container to draw there objects in a circle.
     #[serde(rename = "sun")]
     Sun(Sun),
+
 
     // empty drawing elements
     // - color
     // - tags
+
+    /// draw a line
     #[serde(rename = "line")]
     Line(Line),
+
+    /// draw a spline
     #[serde(rename = "spline")]
     Spline(Spline),
+
+    /// draw a ring (for filling use `circle`)
     #[serde(rename = "ring")]
     Ring(Ring),
 
     // filled drawing elements
     // - color
     // - tags
+
+    /// draw a circle (which is filled)
     #[serde(rename = "circle")]
     Circle(Circle),
+
+    /// draw a path
     #[serde(rename = "icon")]
     Icon(Icon),
 }
 
 impl Object {
+
+    /// extracts tag value from Objects
     pub fn get_tags(&self) -> &Vec<String> {
         match &self {
             Object::Circle(element) => &element.tags,
@@ -67,17 +108,44 @@ impl Object {
     }
 }
 
+/// A container to draw multiple objects in row.
+/// Also useful if you want to draw an object with a
+/// different angle or with another center or size.
+///
+/// # Example
+///
+/// ```json
+/// {
+///  "type": "sequence",
+///  "objects": [
+///    {"type":"line", "a":{"x":-50,"y":-50}, "b":{"x":50,"y":50}}
+///    {"type":"line", "a":{"x":-50,"y":50}, "b":{"x":50,"y":-50}}
+///  ],
+/// }
+/// ```
 #[derive(Serialize, Deserialize)]
 pub struct Sequence {
+
+    /// list of objects to be drawn
     objects: Vec<Object>,
+
+    /// angle (in degree) to rotate (default is 0)
     #[serde(default)]
     pub angle: f64,
+
+    /// resize (default is 100 which means no resizing)
     #[serde(default = "Placement::default_size")]
     pub size: f64,
+
+    /// x coordinate of center (default is 0)
     #[serde(default)]
     pub x: f64,
+
+    /// y coordinate of center (default is 0)
     #[serde(default)]
     pub y: f64,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
 }
@@ -113,19 +181,61 @@ impl Rendable for Sequence {
     }
 }
 
+/// A container to draw another object.
+/// You can use it to not repeating yourself over the same object,
+/// but also to randomize you picture, by allowing your query to
+/// fit on more than one object. In that case one of the objects will be
+/// chosen randomly.
+///
+/// # Example
+///
+/// ```json
+/// {
+///  "type": "placement",
+///  "query": { by_tag: ["number"]}
+/// }
+/// ```
+///
+/// ```json
+/// {
+///  "type": "placement",
+///  "query": { by_name: "1"}
+/// }
+/// ```
+///
+/// ```json
+/// {
+///  "type": "placement",
+///  "query": { one_of_names: ["1","2","3"]}
+/// }
+/// ```
+///
 #[derive(Serialize, Deserialize)]
 pub struct Placement {
-    #[serde(default)]
-    pub x: f64,
-    #[serde(default)]
-    pub y: f64,
+
+    /// the query used to find the object which should be placed.
+    pub query: Query,
+
+    /// angle (in degree) to rotate (default is 0)
     #[serde(default)]
     pub angle: f64,
+
+    /// resize (default is 100 which means no resizing)
     #[serde(default = "Placement::default_size")]
     pub size: f64,
-    pub query: Query,
+
+    /// x coordinate of center (default is 0)
+    #[serde(default)]
+    pub x: f64,
+
+    /// y coordinate of center (default is 0)
+    #[serde(default)]
+    pub y: f64,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
+
 }
 
 impl Placement {
@@ -163,26 +273,55 @@ impl Rendable for Placement {
     }
 }
 
+/// A container to draw there objects in a circle.
+/// useful to draw a sun
+///
+/// # Example
+///
+/// ```json
+/// {
+///  "type": "sun",
+///  "segments": 8,
+///  "query": {"by_tag":["arrows"]}
+/// }
+/// ```
 #[derive(Serialize, Deserialize)]
 pub struct Sun {
-    #[serde(default)]
-    pub x: f64,
-    #[serde(default)]
-    pub y: f64,
-    #[serde(default)]
-    pub angle: f64,
-    #[serde(default = "Sun::default_size")]
-    pub size: f64,
+
+    /// the query used to find the object which should be placed.
+    pub query: Query,
+
+    /// radius of the sun distance from center to the center of the objects
+    /// (default is 100)
     #[serde(default = "Sun::default_radius")]
     pub radius: f64,
 
+    /// segments of the circle, or how many beams of light does the sun have.
+    /// (default is 10)
     #[serde(default = "Sun::default_segments")]
     pub segments: i32,
 
-    pub query: Query,
+    /// angle (in degree) to rotate (default is 0)
+    #[serde(default)]
+    pub angle: f64,
 
+    /// resize (default is 100 which means no resizing)
+    #[serde(default = "Sun::default_size")]
+    pub size: f64,
+
+    /// x coordinate of center (default is 0)
+    #[serde(default)]
+    pub x: f64,
+
+    /// y coordinate of center (default is 0)
+    #[serde(default)]
+    pub y: f64,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
+
+
 }
 
 impl Sun {
@@ -235,14 +374,33 @@ impl Rendable for Sun {
     }
 }
 
+/// draw a Line
+///
+/// #Example
+///
+/// ```json
+/// {
+///  "type": "line",
+///  "a":{"x":50,"y":50},
+///  "b":{"x":-50,"y":-50},
+/// }
+/// ```
 #[derive(Serialize, Deserialize)]
 pub struct Line {
+
+    /// point to start drawing
     #[serde(default)]
     pub a: Point,
+
+    /// point to stop drawing
     #[serde(default)]
     pub b: Point,
+
+    /// color from the palette to draw with
     #[serde(default = "Color::default")]
     pub color: Color,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
 }
@@ -273,14 +431,39 @@ impl Rendable for Line {
     }
 }
 
+/// draw a spline
+///
+/// #Example
+///
+/// ```json
+/// {
+///  "type": "spline",
+///  "a":{"x":50,"y":50},
+///  "sa":{"x":0,"y":50},
+///  "b":{"x":-50,"y":-50},
+///  "sb":{"x":0,"y":-50},
+/// }
+/// ```
 #[derive(Serialize, Deserialize)]
 pub struct Spline {
+
+    /// point to start drawing
     pub a: Point,
+
+    /// point to stop drawing
     pub b: Point,
+
+    /// point to draw the line to at the end of `a`
     pub sa: Point,
+
+    /// point to draw the line to at the end of `b`
     pub sb: Point,
+
+    /// color from the palette to draw with
     #[serde(default = "Color::default")]
     pub color: Color,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
 }
@@ -299,12 +482,28 @@ impl Rendable for Spline {
     }
 }
 
+/// draw a ring (without filling)
+///
+/// #Example
+///
+/// ```json
+/// {
+///  "type": "ring",
+///  "radius":50,
+/// }
+/// ```
 #[derive(Serialize, Deserialize)]
 pub struct Ring {
+
+    /// the radius of the ring (default is 50)
     #[serde(default = "Ring::default_radius")]
     pub radius: f64,
+
+    /// color from the palette to draw with
     #[serde(default = "Color::default")]
     pub color: Color,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
 }
@@ -323,12 +522,28 @@ impl Rendable for Ring {
     }
 }
 
+/// draw a circle with filling
+///
+/// #Example
+///
+/// ```json
+/// {
+///  "type": "circle",
+///  "radius":50,
+/// }
+/// ```
 #[derive(Serialize, Deserialize)]
 pub struct Circle {
+
+    /// the radius of the ring (default is 50)
     #[serde(default = "Circle::default_radius")]
     pub radius: f64,
+
+    /// color from the palette to draw with
     #[serde(default = "Color::default")]
     pub color: Color,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
 }
@@ -347,11 +562,29 @@ impl Rendable for Circle {
     }
 }
 
+/// draw a path/icon
+/// it always is filled with color.
+///
+/// #Example
+///
+/// ```json
+/// {
+///  "type": "icon",
+///  "path":[
+///  [0,0],[50,50],[-50,50]
+///  ]
+/// }
+/// ```
 #[derive(Serialize, Deserialize)]
 pub struct Icon {
+    /// path to draw the
     path: Vec<Vec<f64>>,
+
+    /// color from the palette to draw with
     #[serde(default = "Color::default")]
     pub color: Color,
+
+    /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
 }

@@ -1,14 +1,16 @@
+//!A tool to create random background images.
+
 use cairo::Context;
 use cairo::Format;
 use cairo::ImageSurface;
 
 use std::fs::File;
 
-mod objects;
-mod palette;
-mod rendable;
-mod structure;
-mod tag;
+pub mod objects;
+pub mod palette;
+pub mod rendable;
+pub mod structure;
+pub mod tag;
 
 use crate::rendable::Rendable;
 use crate::structure::ImageContext;
