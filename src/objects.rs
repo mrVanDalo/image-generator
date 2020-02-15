@@ -72,6 +72,10 @@ pub struct Sequence {
     #[serde(default = "Placement::default_size")]
     pub size: f64,
     #[serde(default)]
+    pub x: f64,
+    #[serde(default)]
+    pub y: f64,
+    #[serde(default)]
     pub tags: Vec<String>,
 }
 
@@ -79,6 +83,7 @@ impl Rendable for Sequence {
     fn render(&self, context: &Context, image_context: &ImageContext) {
         context.save();
 
+        context.translate(self.x, self.y);
         context.rotate(degree_to_radian(self.angle));
         context.scale(0.01 * self.size, 0.01 * self.size);
 
@@ -135,7 +140,6 @@ impl Rendable for Placement {
         context.save();
 
         context.translate(self.x, self.y);
-
         context.rotate(degree_to_radian(self.angle));
         context.scale(0.01 * self.size, 0.01 * self.size);
 
