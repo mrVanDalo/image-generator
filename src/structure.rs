@@ -112,6 +112,7 @@ impl ImageContext<'_> {
     fn object_to_rendable_box(object: &Object) -> Option<Box<&dyn Rendable>> {
         match object {
             Object::Circle(element) => Some(Box::new(element)),
+            Object::Grid(element) => Some(Box::new(element)),
             Object::Icon(element) => Some(Box::new(element)),
             Object::Line(element) => Some(Box::new(element)),
             Object::Placement(element) => Some(Box::new(element)),

@@ -16,12 +16,16 @@ use crate::structure::Query;
 use cairo::Context;
 use serde::{Deserialize, Serialize};
 
+/// helper function
+#[inline(always)]
+fn degree_to_radian(degree: f64) -> f64 {
+    degree * 0.017453293
+}
 
 /// Configures the color to use from the palette to draw.
 /// (default is `fill`)
 #[derive(Serialize, Deserialize)]
 pub enum Color {
-
     /// Use the background color from the palette to draw.
     #[serde(rename = "background")]
     Background,
@@ -42,13 +46,11 @@ impl Color {
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Object {
-
     // containers should have:
     // - angle
-    // - size // todo : rename scale
+    // - scale // todo : rename scale
     // - tags
     // - stop when scale is to small
-
     /// A container to draw multiple objects in row.
     #[serde(rename = "sequence")]
     Sequence(Sequence),
@@ -57,15 +59,17 @@ pub enum Object {
     #[serde(rename = "placement")]
     Placement(Placement),
 
-    /// A container to draw there objects in a circle.
+    /// A container to draw objects in a circle.
     #[serde(rename = "sun")]
     Sun(Sun),
 
+    /// A container to draw multiple objects in a grid.
+    #[serde(rename = "grid")]
+    Grid(Grid),
 
     // empty drawing elements
     // - color
     // - tags
-
     /// draw a line
     #[serde(rename = "line")]
     Line(Line),
@@ -81,7 +85,6 @@ pub enum Object {
     // filled drawing elements
     // - color
     // - tags
-
     /// draw a circle (which is filled)
     #[serde(rename = "circle")]
     Circle(Circle),
@@ -92,11 +95,11 @@ pub enum Object {
 }
 
 impl Object {
-
     /// extracts tag value from Objects
     pub fn get_tags(&self) -> &Vec<String> {
         match &self {
             Object::Circle(element) => &element.tags,
+            Object::Grid(element) => &element.tags,
             Object::Icon(element) => &element.tags,
             Object::Line(element) => &element.tags,
             Object::Placement(element) => &element.tags,
@@ -110,7 +113,7 @@ impl Object {
 
 /// A container to draw multiple objects in row.
 /// Also useful if you want to draw an object with a
-/// different angle or with another center or size.
+/// different angle or with another center or scale.
 ///
 /// # Example
 ///
@@ -125,7 +128,6 @@ impl Object {
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct Sequence {
-
     /// list of objects to be drawn
     objects: Vec<Object>,
 
@@ -133,9 +135,9 @@ pub struct Sequence {
     #[serde(default)]
     pub angle: f64,
 
-    /// resize (default is 100 which means no resizing)
-    #[serde(default = "Placement::default_size")]
-    pub size: f64,
+    /// rescale (default is 100 which means no resizing)
+    #[serde(default = "Sequence::default_scale")]
+    pub scale: f64,
 
     /// x coordinate of center (default is 0)
     #[serde(default)]
@@ -150,13 +152,19 @@ pub struct Sequence {
     pub tags: Vec<String>,
 }
 
+impl Sequence {
+    fn default_scale() -> f64 {
+        100.0
+    }
+}
+
 impl Rendable for Sequence {
     fn render(&self, context: &Context, image_context: &ImageContext) {
         context.save();
 
         context.translate(self.x, self.y);
         context.rotate(degree_to_radian(self.angle));
-        context.scale(0.01 * self.size, 0.01 * self.size);
+        context.scale(0.01 * self.scale, 0.01 * self.scale);
 
         // stop rendering when scale is to small
         let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
@@ -168,6 +176,7 @@ impl Rendable for Sequence {
         for object in self.objects.iter() {
             match object {
                 Object::Circle(element) => element.render(&context, image_context),
+                Object::Grid(element) => element.render(&context, image_context),
                 Object::Icon(element) => element.render(&context, image_context),
                 Object::Line(element) => element.render(&context, image_context),
                 Object::Placement(element) => element.render(&context, image_context),
@@ -177,6 +186,128 @@ impl Rendable for Sequence {
                 Object::Sun(element) => element.render(&context, image_context),
             }
         }
+        context.restore();
+    }
+}
+
+/// A container to draw multiple objects in a grid.
+/// This is pretty much `placement` with more features.
+///
+/// Be aware that like all objects this one centers as well.
+/// and so odd and even numbers of rows will result in different
+/// object placement.
+///
+/// # Example
+///
+/// ```json
+/// {
+///  "type": "grid",
+///  "query": { by_tag: ["number"]}
+///  "rows": 10,
+/// }
+/// ```
+///
+#[derive(Serialize, Deserialize)]
+pub struct Grid {
+    /// number of rows
+    #[serde(default = "Grid::default_rows")]
+    pub rows: i32,
+
+    /// number of columns
+    #[serde(default = "Grid::default_columns")]
+    pub columns: i32,
+
+    /// width between objects in the grid (default is 100)
+    #[serde(default = "Grid::default_width")]
+    pub width: f64,
+
+    /// height between objects in the grid (default is 100)
+    #[serde(default = "Grid::default_height")]
+    pub height: f64,
+
+    /// the query used to find the object which should be placed.
+    pub query: Query,
+
+    /// angle (in degree) to rotate (default is 0)
+    #[serde(default)]
+    pub angle: f64,
+
+    /// rescale (default is 100 which means no resizing)
+    #[serde(default = "Grid::default_scale")]
+    pub scale: f64,
+
+    /// x coordinate of center (default is 0)
+    #[serde(default)]
+    pub x: f64,
+
+    /// y coordinate of center (default is 0)
+    #[serde(default)]
+    pub y: f64,
+
+    /// tags of this object which can be used to query.
+    #[serde(default)]
+    pub tags: Vec<String>,
+}
+
+impl Grid {
+    fn default_scale() -> f64 {
+        100.0
+    }
+    fn default_width() -> f64 {
+        100.0
+    }
+    fn default_height() -> f64 {
+        100.0
+    }
+    fn default_rows() -> i32 {
+        1
+    }
+    fn default_columns() -> i32 {
+        1
+    }
+}
+
+impl Rendable for Grid {
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        // stop rendering when scale is to small
+        let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
+        let (x1, y1) = context.user_to_device_distance(0.0, 0.0);
+        if f64::sqrt((x1 - x0).powi(2) + (y1 - y0).powi(2)) < 0.3 {
+            return ();
+        }
+
+        context.save();
+        context.translate(self.x, self.y);
+        context.rotate(degree_to_radian(self.angle));
+
+        let total_width = self.width * f64::from(self.columns);
+        let total_height = self.height * f64::from(self.rows);
+
+        let start_x = (total_width / 2.0) - (self.width / 2.0);
+        let start_y = (total_height / 2.0) - (self.height / 2.0);
+
+        for x in (std::ops::Range {
+            start: 0,
+            end: self.columns,
+        }) {
+            for y in (std::ops::Range {
+                start: 0,
+                end: self.rows,
+            }) {
+                let rendable = image_context.get_element_from_query(&self.query);
+                if rendable.is_some() {
+                    context.save();
+                    context.translate(
+                        f64::from(x) * self.width - start_x,
+                        f64::from(y) * self.height - start_y,
+                    );
+                    context.scale(0.01 * self.scale, 0.01 * self.scale);
+                    rendable.unwrap().render(&context, image_context);
+                    context.restore();
+                }
+            }
+        }
+
         context.restore();
     }
 }
@@ -212,7 +343,6 @@ impl Rendable for Sequence {
 ///
 #[derive(Serialize, Deserialize)]
 pub struct Placement {
-
     /// the query used to find the object which should be placed.
     pub query: Query,
 
@@ -220,9 +350,9 @@ pub struct Placement {
     #[serde(default)]
     pub angle: f64,
 
-    /// resize (default is 100 which means no resizing)
-    #[serde(default = "Placement::default_size")]
-    pub size: f64,
+    /// rescale (default is 100 which means no resizing)
+    #[serde(default = "Placement::default_scale")]
+    pub scale: f64,
 
     /// x coordinate of center (default is 0)
     #[serde(default)]
@@ -235,18 +365,12 @@ pub struct Placement {
     /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
-
 }
 
 impl Placement {
-    fn default_size() -> f64 {
+    fn default_scale() -> f64 {
         100.0
     }
-}
-
-#[inline(always)]
-fn degree_to_radian(degree: f64) -> f64 {
-    degree * 0.017453293
 }
 
 impl Rendable for Placement {
@@ -255,7 +379,7 @@ impl Rendable for Placement {
 
         context.translate(self.x, self.y);
         context.rotate(degree_to_radian(self.angle));
-        context.scale(0.01 * self.size, 0.01 * self.size);
+        context.scale(0.01 * self.scale, 0.01 * self.scale);
 
         // stop rendering when scale is to small
         let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
@@ -287,7 +411,6 @@ impl Rendable for Placement {
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct Sun {
-
     /// the query used to find the object which should be placed.
     pub query: Query,
 
@@ -305,9 +428,9 @@ pub struct Sun {
     #[serde(default)]
     pub angle: f64,
 
-    /// resize (default is 100 which means no resizing)
-    #[serde(default = "Sun::default_size")]
-    pub size: f64,
+    /// rescale (default is 100 which means no resizing)
+    #[serde(default = "Sun::default_scale")]
+    pub scale: f64,
 
     /// x coordinate of center (default is 0)
     #[serde(default)]
@@ -320,12 +443,10 @@ pub struct Sun {
     /// tags of this object which can be used to query.
     #[serde(default)]
     pub tags: Vec<String>,
-
-
 }
 
 impl Sun {
-    fn default_size() -> f64 {
+    fn default_scale() -> f64 {
         100.0
     }
     fn default_radius() -> f64 {
@@ -360,7 +481,7 @@ impl Rendable for Sun {
             context.rotate(f64::from(segment) * segment_rotation_factor);
             context.translate(self.radius, 0.0);
             context.rotate(degree_to_radian(90.0));
-            context.scale(0.01 * self.size, 0.01 * self.size);
+            context.scale(0.01 * self.scale, 0.01 * self.scale);
 
             let rendable = image_context.get_element_from_query(&self.query);
             if rendable.is_some() {
@@ -387,7 +508,6 @@ impl Rendable for Sun {
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct Line {
-
     /// point to start drawing
     #[serde(default)]
     pub a: Point,
@@ -446,7 +566,6 @@ impl Rendable for Line {
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct Spline {
-
     /// point to start drawing
     pub a: Point,
 
@@ -494,7 +613,6 @@ impl Rendable for Spline {
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct Ring {
-
     /// the radius of the ring (default is 50)
     #[serde(default = "Ring::default_radius")]
     pub radius: f64,
@@ -534,7 +652,6 @@ impl Rendable for Ring {
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct Circle {
-
     /// the radius of the ring (default is 50)
     #[serde(default = "Circle::default_radius")]
     pub radius: f64,
