@@ -115,7 +115,6 @@ impl ImageContext<'_> {
             Object::Grid(element) => Some(Box::new(element)),
             Object::Icon(element) => Some(Box::new(element)),
             Object::Line(element) => Some(Box::new(element)),
-            Object::Placement(element) => Some(Box::new(element)),
             Object::Ring(element) => Some(Box::new(element)),
             Object::Sequence(element) => Some(Box::new(element)),
             Object::Spline(element) => Some(Box::new(element)),

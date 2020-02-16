@@ -55,10 +55,6 @@ pub enum Object {
     #[serde(rename = "sequence")]
     Sequence(Sequence),
 
-    /// A container to draw another object.
-    #[serde(rename = "placement")]
-    Placement(Placement),
-
     /// A container to draw objects in a circle.
     #[serde(rename = "sun")]
     Sun(Sun),
@@ -102,7 +98,6 @@ impl Object {
             Object::Grid(element) => &element.tags,
             Object::Icon(element) => &element.tags,
             Object::Line(element) => &element.tags,
-            Object::Placement(element) => &element.tags,
             Object::Ring(element) => &element.tags,
             Object::Sequence(element) => &element.tags,
             Object::Spline(element) => &element.tags,
@@ -179,7 +174,6 @@ impl Rendable for Sequence {
                 Object::Grid(element) => element.render(&context, image_context),
                 Object::Icon(element) => element.render(&context, image_context),
                 Object::Line(element) => element.render(&context, image_context),
-                Object::Placement(element) => element.render(&context, image_context),
                 Object::Ring(element) => element.render(&context, image_context),
                 Object::Sequence(element) => element.render(&context, image_context),
                 Object::Spline(element) => element.render(&context, image_context),
@@ -191,7 +185,11 @@ impl Rendable for Sequence {
 }
 
 /// A container to draw multiple objects in a grid.
-/// This is pretty much `placement` with more features.
+///
+/// You can use it to not repeating yourself over the same object,
+/// but also to randomize you picture, by allowing your query to
+/// fit on more than one object. In that case one of the objects will be
+/// chosen randomly.
 ///
 /// Be aware that like all objects this one centers as well.
 /// and so odd and even numbers of rows will result in different
@@ -203,7 +201,8 @@ impl Rendable for Sequence {
 /// {
 ///  "type": "grid",
 ///  "query": { by_tag: ["number"]}
-///  "rows": 10,
+///  "columns": 10,
+///  "width": 45,
 /// }
 /// ```
 ///
@@ -312,90 +311,6 @@ impl Rendable for Grid {
     }
 }
 
-/// A container to draw another object.
-/// You can use it to not repeating yourself over the same object,
-/// but also to randomize you picture, by allowing your query to
-/// fit on more than one object. In that case one of the objects will be
-/// chosen randomly.
-///
-/// # Example
-///
-/// ```json
-/// {
-///  "type": "placement",
-///  "query": { by_tag: ["number"]}
-/// }
-/// ```
-///
-/// ```json
-/// {
-///  "type": "placement",
-///  "query": { by_name: "1"}
-/// }
-/// ```
-///
-/// ```json
-/// {
-///  "type": "placement",
-///  "query": { one_of_names: ["1","2","3"]}
-/// }
-/// ```
-///
-#[derive(Serialize, Deserialize)]
-pub struct Placement {
-    /// the query used to find the object which should be placed.
-    pub query: Query,
-
-    /// angle (in degree) to rotate (default is 0)
-    #[serde(default)]
-    pub angle: f64,
-
-    /// rescale (default is 100 which means no resizing)
-    #[serde(default = "Placement::default_scale")]
-    pub scale: f64,
-
-    /// x coordinate of center (default is 0)
-    #[serde(default)]
-    pub x: f64,
-
-    /// y coordinate of center (default is 0)
-    #[serde(default)]
-    pub y: f64,
-
-    /// tags of this object which can be used to query.
-    #[serde(default)]
-    pub tags: Vec<String>,
-}
-
-impl Placement {
-    fn default_scale() -> f64 {
-        100.0
-    }
-}
-
-impl Rendable for Placement {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
-        context.save();
-
-        context.translate(self.x, self.y);
-        context.rotate(degree_to_radian(self.angle));
-        context.scale(0.01 * self.scale, 0.01 * self.scale);
-
-        // stop rendering when scale is to small
-        let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
-        let (x1, y1) = context.user_to_device_distance(0.0, 0.0);
-        if f64::sqrt((x1 - x0).powi(2) + (y1 - y0).powi(2)) < 0.3 {
-            return ();
-        }
-
-        let rendable = image_context.get_element_from_query(&self.query);
-        if rendable.is_some() {
-            rendable.unwrap().render(&context, image_context);
-        }
-
-        context.restore();
-    }
-}
 
 /// A container to draw there objects in a circle.
 /// useful to draw a sun
