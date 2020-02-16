@@ -311,7 +311,6 @@ impl Rendable for Grid {
     }
 }
 
-
 /// A container to draw there objects in a circle.
 /// useful to draw a sun
 ///
@@ -603,14 +602,15 @@ impl Rendable for Circle {
 /// {
 ///  "type": "icon",
 ///  "path":[
-///  [0,0],[50,50],[-50,50]
+///  { x: 0, y: 0},
+///  { x: 0, y: 0, sa: {x: 0, y:0}, sb:{x: 0, y:0} },
 ///  ]
 /// }
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct Icon {
     /// path to draw the
-    path: Vec<Vec<f64>>,
+    path: Vec<IconPoint>,
 
     /// color from the palette to draw with
     #[serde(default = "Color::default")]
@@ -628,20 +628,56 @@ impl Rendable for Icon {
         let mut first = true;
         for path in self.path.iter() {
             if first {
-                context.move_to(path[0], path[1]);
+                context.move_to(path.x, path.y);
                 first = false;
             } else {
-                if path.len() == 2 {
-                    context.line_to(path[0], path[1]);
-                } else if path.len() == 6 {
-                    context.curve_to(path[0], path[1], path[2], path[3], path[4], path[5]);
-                }
-                // todo
-                // else return error
+                if path.sa.is_none() && path.sb.is_none() {
+                    context.line_to(path.x, path.y);
+                } else {
+                    let sb = if path.sb.is_some() {
+                            Point {
+                                x: path.sb.as_ref().unwrap().x,
+                                y: path.sb.as_ref().unwrap().y,
+                            }
+                    } else {
+                        Point {
+                            x: path.x,
+                            y: path.y,
+                        }
+                    };
+                    let sa = if path.sa.is_some() {
+                            Point {
+                                x: path.sa.as_ref().unwrap().x,
+                                y: path.sa.as_ref().unwrap().y,
+                            }
+                    } else {
+                        Point {
+                            x: path.x,
+                            y: path.y,
+                        }
+                    };
+                    context.curve_to(sa.x, sa.y, sb.x, sb.y, path.x, path.y);
+                };
             }
         }
         context.close_path();
-
         context.fill();
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct IconPoint {
+    /// x coordinate
+    #[serde(default)]
+    pub x: f64,
+
+    /// y coordinate
+    #[serde(default)]
+    pub y: f64,
+
+    /// spline point of source
+    sa: Option<Point>,
+
+    /// spline point of target (the point given by x and y)
+    sb: Option<Point>,
 }
