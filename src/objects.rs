@@ -46,14 +46,12 @@ impl Color {
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Object {
-    // containers should have:
-    // - angle
-    // - scale // todo : rename scale
-    // - tags
-    // - stop when scale is to small
     /// A container to draw multiple objects in row.
     #[serde(rename = "sequence")]
     Sequence(Sequence),
+    /// alias for `sequence`
+    #[serde(rename = "seq")]
+    Seq(Sequence),
 
     /// A container to draw objects in a circle.
     #[serde(rename = "sun")]
@@ -63,31 +61,21 @@ pub enum Object {
     #[serde(rename = "grid")]
     Grid(Grid),
 
-    // empty drawing elements
-    // - color
-    // - tags
-    /// draw a line
-    #[serde(rename = "line")]
-    Line(Line),
-
-    /// draw a spline
-    #[serde(rename = "spline")]
-    Spline(Spline),
-
-    /// draw a ring (for filling use `circle`)
+    /// draw an unfilled ring (for filling use `circle`)
     #[serde(rename = "ring")]
     Ring(Ring),
 
-    // filled drawing elements
-    // - color
-    // - tags
-    /// draw a circle (which is filled)
+    /// draw a filled circle (which is filled)
     #[serde(rename = "circle")]
     Circle(Circle),
 
-    /// draw a path
+    /// draw a path an fill it
     #[serde(rename = "icon")]
     Icon(Icon),
+
+    /// draw a path
+    #[serde(rename = "line")]
+    Line(Line),
 }
 
 impl Object {
@@ -100,7 +88,7 @@ impl Object {
             Object::Line(element) => &element.tags,
             Object::Ring(element) => &element.tags,
             Object::Sequence(element) => &element.tags,
-            Object::Spline(element) => &element.tags,
+            Object::Seq(element) => &element.tags,
             Object::Sun(element) => &element.tags,
         }
     }
@@ -176,7 +164,7 @@ impl Rendable for Sequence {
                 Object::Line(element) => element.render(&context, image_context),
                 Object::Ring(element) => element.render(&context, image_context),
                 Object::Sequence(element) => element.render(&context, image_context),
-                Object::Spline(element) => element.render(&context, image_context),
+                Object::Seq(element) => element.render(&context, image_context),
                 Object::Sun(element) => element.render(&context, image_context),
             }
         }
@@ -409,36 +397,6 @@ impl Rendable for Sun {
     }
 }
 
-/// draw a Line
-///
-/// #Example
-///
-/// ```json
-/// {
-///  "type": "line",
-///  "a":{"x":50,"y":50},
-///  "b":{"x":-50,"y":-50},
-/// }
-/// ```
-#[derive(Serialize, Deserialize)]
-pub struct Line {
-    /// point to start drawing
-    #[serde(default)]
-    pub a: Point,
-
-    /// point to stop drawing
-    #[serde(default)]
-    pub b: Point,
-
-    /// color from the palette to draw with
-    #[serde(default = "Color::default")]
-    pub color: Color,
-
-    /// tags of this object which can be used to query.
-    #[serde(default)]
-    pub tags: Vec<String>,
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct Point {
     #[serde(default)]
@@ -450,68 +408,6 @@ pub struct Point {
 impl Default for Point {
     fn default() -> Self {
         Point { x: 0.0, y: 0.0 }
-    }
-}
-
-impl Rendable for Line {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
-        self.configure_color(&self.color, context, image_context);
-
-        // draw line
-        context.move_to(self.a.x, self.a.y);
-        context.line_to(self.b.x, self.b.y);
-
-        self.stroke_and_preserve_line_width(context);
-    }
-}
-
-/// draw a spline
-///
-/// #Example
-///
-/// ```json
-/// {
-///  "type": "spline",
-///  "a":{"x":50,"y":50},
-///  "sa":{"x":0,"y":50},
-///  "b":{"x":-50,"y":-50},
-///  "sb":{"x":0,"y":-50},
-/// }
-/// ```
-#[derive(Serialize, Deserialize)]
-pub struct Spline {
-    /// point to start drawing
-    pub a: Point,
-
-    /// point to stop drawing
-    pub b: Point,
-
-    /// point to draw the line to at the end of `a`
-    pub sa: Point,
-
-    /// point to draw the line to at the end of `b`
-    pub sb: Point,
-
-    /// color from the palette to draw with
-    #[serde(default = "Color::default")]
-    pub color: Color,
-
-    /// tags of this object which can be used to query.
-    #[serde(default)]
-    pub tags: Vec<String>,
-}
-
-impl Rendable for Spline {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
-        self.configure_color(&self.color, context, image_context);
-
-        // draw line
-        context.move_to(self.a.x, self.a.y);
-        context.curve_to(
-            self.sa.x, self.sa.y, self.sb.x, self.sb.y, self.b.x, self.b.y,
-        );
-
-        self.stroke_and_preserve_line_width(context);
     }
 }
 
@@ -593,7 +489,7 @@ impl Rendable for Circle {
     }
 }
 
-/// draw a path/icon
+/// draw an icon
 /// it always is filled with color.
 ///
 /// #Example
@@ -635,10 +531,10 @@ impl Rendable for Icon {
                     context.line_to(path.x, path.y);
                 } else {
                     let sb = if path.sb.is_some() {
-                            Point {
-                                x: path.sb.as_ref().unwrap().x,
-                                y: path.sb.as_ref().unwrap().y,
-                            }
+                        Point {
+                            x: path.sb.as_ref().unwrap().x,
+                            y: path.sb.as_ref().unwrap().y,
+                        }
                     } else {
                         Point {
                             x: path.x,
@@ -646,10 +542,10 @@ impl Rendable for Icon {
                         }
                     };
                     let sa = if path.sa.is_some() {
-                            Point {
-                                x: path.sa.as_ref().unwrap().x,
-                                y: path.sa.as_ref().unwrap().y,
-                            }
+                        Point {
+                            x: path.sa.as_ref().unwrap().x,
+                            y: path.sa.as_ref().unwrap().y,
+                        }
                     } else {
                         Point {
                             x: path.x,
@@ -680,4 +576,75 @@ pub struct IconPoint {
 
     /// spline point of target (the point given by x and y)
     sb: Option<Point>,
+}
+
+/// draw an path
+/// it always is just the line with color.
+///
+/// #Example
+///
+/// ```json
+/// {
+///  "type": "path",
+///  "path":[
+///  { x: 0, y: 0},
+///  { x: 0, y: 0, sa: {x: 0, y:0}, sb:{x: 0, y:0} },
+///  ]
+/// }
+/// ```
+#[derive(Serialize, Deserialize)]
+pub struct Line {
+    /// path to draw the
+    path: Vec<IconPoint>,
+
+    /// color from the palette to draw with
+    #[serde(default = "Color::default")]
+    pub color: Color,
+
+    /// tags of this object which can be used to query.
+    #[serde(default)]
+    pub tags: Vec<String>,
+}
+
+impl Rendable for Line {
+    fn render(&self, context: &Context, image_context: &ImageContext) {
+        self.configure_color(&self.color, context, image_context);
+
+        let mut first = true;
+        for path in self.path.iter() {
+            if first {
+                context.move_to(path.x, path.y);
+                first = false;
+            } else {
+                if path.sa.is_none() && path.sb.is_none() {
+                    context.line_to(path.x, path.y);
+                } else {
+                    let sb = if path.sb.is_some() {
+                        Point {
+                            x: path.sb.as_ref().unwrap().x,
+                            y: path.sb.as_ref().unwrap().y,
+                        }
+                    } else {
+                        Point {
+                            x: path.x,
+                            y: path.y,
+                        }
+                    };
+                    let sa = if path.sa.is_some() {
+                        Point {
+                            x: path.sa.as_ref().unwrap().x,
+                            y: path.sa.as_ref().unwrap().y,
+                        }
+                    } else {
+                        Point {
+                            x: path.x,
+                            y: path.y,
+                        }
+                    };
+                    context.curve_to(sa.x, sa.y, sb.x, sb.y, path.x, path.y);
+                };
+            }
+        }
+        self.stroke_and_preserve_line_width(context);
+    }
 }
