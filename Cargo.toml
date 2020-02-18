@@ -6,8 +6,16 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+description = "Use JSON files to render images."
+documentation = "https://github.com/mrVanDalo/image-generator"
+homepage = "https://github.com/mrVanDalo/image-generator"
+repository = "https://github.com/mrVanDalo/image-generator"
+readme = "README.md"
+keywords = ["image", "drawing"]
+categories = ["graphics","multimedia::images", "rendering","visualization"]
+license = "GPL-3.0"
+license-file = "LICENSE"
 maintenance = { status = "actively-developed" }
-
 exclude = [ "shell.nix", "default.nix" ]
 
 [dependencies]
