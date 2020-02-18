@@ -8,7 +8,7 @@ Randomization is part of the image creation.
 ## install
 
 ```
-cargo install --path .
+cargo install image-generator
 ```
 
 ## run
