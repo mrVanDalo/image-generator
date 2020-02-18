@@ -3,6 +3,14 @@ Use JSON files to render images.
 The intention is to create background images.
 Randomization is part of the image creation.
 
+# Links 
+
+Fell free to add links to your repositories of json-files here.
+
+* [crate.io link](https://crates.io/crates/image-generator)
+* [My Repository of Drawings](https://github.com/mrVanDalo/image-generator-examples)
+
+
 # How to 
 
 ## install
@@ -371,11 +379,4 @@ for example in `sequence` objects will not be considered.
 
 scaling of lines will not change the line size. the line size is constant and
 can be configured in the main structure, as well as command line argument (`--line-size`).
-
-## Links
-
-If you have a repository where you store json to generate images, please let me know so I can link them here.
-
-* [crate.io link]()
-* [My Repository of Drawings](https://github.com/mrVanDalo/image-generator-examples)
 
