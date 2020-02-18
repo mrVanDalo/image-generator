@@ -30,17 +30,22 @@ struct Opt {
     #[structopt(name = "input.json", parse(from_os_str))]
     input: PathBuf,
 
-    /// override width (default is 100)
+    /// Optional : override width (default is 100)
     /// you can also set width in the input.json
     #[structopt(long)]
     width: Option<i32>,
 
-    /// override height (default is 100)
+    /// Optional : override height (default is 100)
     /// you can also set height in the input.json
     #[structopt(long)]
     height: Option<i32>,
 
-    /// override line size (default is 1.0)
+    /// Optional : override depth (default is 30)
+    /// of recursion allowed.
+    #[structopt(long)]
+    depth: Option<i32>,
+
+    /// Optional : override line size (default is 1.0)
     /// you can also set line_size in the input.json
     #[structopt(long)]
     line_size: Option<f64>,
@@ -69,6 +74,10 @@ fn main() {
         Some(line_size) => line_size,
         None => structure.line_size,
     };
+    let depth = match opt.depth {
+        Some(depth) => depth,
+        None => structure.depth,
+    };
 
     let surface = ImageSurface::create(Format::Rgb24, width, height).expect("Can't create surface");
     let context = Context::new(&surface);
@@ -93,7 +102,7 @@ fn main() {
 
     // center
     context.translate(f64::from(width) / 2.0, f64::from(height) / 2.0);
-    structure.render(&context, &image_context);
+    structure.render(&context, &image_context, depth);
 
     render_image(&opt.output.to_string_lossy(), &surface);
 }

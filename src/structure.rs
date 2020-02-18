@@ -4,6 +4,7 @@ use crate::rendable::Rendable;
 use cairo::Context;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
+use serde_json::value::Value;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
@@ -11,17 +12,34 @@ use std::io::BufReader;
 
 #[derive(Serialize, Deserialize)]
 pub struct Structure {
+    /// width of the picture
     #[serde(default = "Structure::default_width")]
     pub width: i32,
+
+    /// height of the picture
     #[serde(default = "Structure::default_height")]
     pub height: i32,
+
+    /// List of defined objects which can be drawn.
     #[serde(default)]
     pub objects: HashMap<String, Object>,
+
+    /// Query to find the first element to draw from
     pub start: Query,
+
+    /// color scheme to use for generating palette
     #[serde(default = "Structure::default_color_scheme")]
     pub color_scheme: ColorScheme,
+
+    /// how thick should lines be drawn
+    /// this will be not affected by scaling size
     #[serde(default = "Structure::default_line_size")]
     pub line_size: f64,
+
+    /// How deep should recursion go?
+    /// How many queries in a row should be called before stopping.
+    #[serde(default = "Structure::default_depth")]
+    pub depth: i32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -42,6 +60,9 @@ impl Structure {
     fn default_height() -> i32 {
         100
     }
+    fn default_depth() -> i32 {
+        30
+    }
     fn default_line_size() -> f64 {
         1.0
     }
@@ -51,13 +72,17 @@ impl Structure {
         let structure: Structure = serde_json::from_reader(reader)?;
         return Ok(structure);
     }
+    pub fn load_from_value(input: Value) -> Result<Structure, Box<dyn Error>> {
+        let structure: Structure = serde_json::from_value(input)?;
+        return Ok(structure);
+    }
 }
 
 impl Rendable for Structure {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
-        let rendable = image_context.get_element_from_query(&self.start);
+    fn render(&self, context: &Context, image_context: &ImageContext, depth: i32) {
+        let rendable = image_context.get_element_from_query(&self.start, depth);
         if rendable.is_some() {
-            rendable.unwrap().render(&context, image_context);
+            rendable.unwrap().render(&context, image_context, depth);
         }
     }
 }
@@ -123,7 +148,11 @@ impl ImageContext<'_> {
     }
 
     // todo : abort when scale is to small
-    pub fn get_element_from_query(&self, query: &Query) -> Option<Box<&dyn Rendable>> {
+    pub fn get_element_from_query(&self, query: &Query, depth: i32) -> Option<Box<&dyn Rendable>> {
+        // if to deep just stop with the elements
+        if depth < 1 {
+            return None;
+        }
         match &query {
             Query::ByName(name) => match self.objects.get(name) {
                 None => None,
@@ -131,7 +160,7 @@ impl ImageContext<'_> {
             },
             Query::OneOfNames(names) => match names.choose(&mut rand::thread_rng()) {
                 None => None,
-                Some(name) => self.get_element_from_query(&Query::ByName(name.to_string())),
+                Some(name) => self.get_element_from_query(&Query::ByName(name.to_string()), depth),
             },
             Query::ByTag(tags) => match tags.choose(&mut rand::thread_rng()) {
                 None => None,

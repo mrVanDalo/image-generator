@@ -142,7 +142,7 @@ impl Sequence {
 }
 
 impl Rendable for Sequence {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
+    fn render(&self, context: &Context, image_context: &ImageContext, depth: i32) {
         context.save();
 
         context.translate(self.x, self.y);
@@ -158,14 +158,14 @@ impl Rendable for Sequence {
 
         for object in self.objects.iter() {
             match object {
-                Object::Circle(element) => element.render(&context, image_context),
-                Object::Grid(element) => element.render(&context, image_context),
-                Object::Icon(element) => element.render(&context, image_context),
-                Object::Line(element) => element.render(&context, image_context),
-                Object::Ring(element) => element.render(&context, image_context),
-                Object::Sequence(element) => element.render(&context, image_context),
-                Object::Seq(element) => element.render(&context, image_context),
-                Object::Sun(element) => element.render(&context, image_context),
+                Object::Circle(element) => element.render(&context, image_context, depth),
+                Object::Grid(element) => element.render(&context, image_context, depth),
+                Object::Icon(element) => element.render(&context, image_context, depth),
+                Object::Line(element) => element.render(&context, image_context, depth),
+                Object::Ring(element) => element.render(&context, image_context, depth),
+                Object::Sequence(element) => element.render(&context, image_context, depth),
+                Object::Seq(element) => element.render(&context, image_context, depth),
+                Object::Sun(element) => element.render(&context, image_context, depth),
             }
         }
         context.restore();
@@ -255,7 +255,7 @@ impl Grid {
 }
 
 impl Rendable for Grid {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
+    fn render(&self, context: &Context, image_context: &ImageContext, depth: i32) {
         // stop rendering when scale is to small
         let (x0, y0) = context.user_to_device_distance(100.0, 100.0);
         let (x1, y1) = context.user_to_device_distance(0.0, 0.0);
@@ -281,7 +281,7 @@ impl Rendable for Grid {
                 start: 0,
                 end: self.rows,
             }) {
-                let rendable = image_context.get_element_from_query(&self.query);
+                let rendable = image_context.get_element_from_query(&self.query, depth);
                 if rendable.is_some() {
                     context.save();
                     context.translate(
@@ -289,7 +289,7 @@ impl Rendable for Grid {
                         f64::from(y) * self.height - start_y,
                     );
                     context.scale(0.01 * self.scale, 0.01 * self.scale);
-                    rendable.unwrap().render(&context, image_context);
+                    rendable.unwrap().render(&context, image_context, depth - 1);
                     context.restore();
                 }
             }
@@ -360,7 +360,7 @@ impl Sun {
 }
 
 impl Rendable for Sun {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
+    fn render(&self, context: &Context, image_context: &ImageContext, depth: i32) {
         context.save();
 
         context.translate(self.x, self.y);
@@ -385,9 +385,9 @@ impl Rendable for Sun {
             context.rotate(degree_to_radian(90.0));
             context.scale(0.01 * self.scale, 0.01 * self.scale);
 
-            let rendable = image_context.get_element_from_query(&self.query);
+            let rendable = image_context.get_element_from_query(&self.query, depth);
             if rendable.is_some() {
-                rendable.unwrap().render(&context, image_context);
+                rendable.unwrap().render(&context, image_context, depth - 1);
             }
 
             context.restore();
@@ -443,7 +443,7 @@ impl Ring {
 }
 
 impl Rendable for Ring {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
+    fn render(&self, context: &Context, image_context: &ImageContext, _depth: i32) {
         self.configure_color(&self.color, context, image_context);
         context.arc(0.0, 0.0, self.radius, 0.0, 2.0 * std::f64::consts::PI);
         self.stroke_and_preserve_line_width(&context);
@@ -482,7 +482,7 @@ impl Circle {
 }
 
 impl Rendable for Circle {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
+    fn render(&self, context: &Context, image_context: &ImageContext, _depth: i32) {
         self.configure_color(&self.color, context, image_context);
         context.arc(0.0, 0.0, self.radius, 0.0, 2.0 * std::f64::consts::PI);
         context.fill();
@@ -518,7 +518,7 @@ pub struct Icon {
 }
 
 impl Rendable for Icon {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
+    fn render(&self, context: &Context, image_context: &ImageContext, _depth: i32) {
         self.configure_color(&self.color, context, image_context);
 
         let mut first = true;
@@ -607,7 +607,7 @@ pub struct Line {
 }
 
 impl Rendable for Line {
-    fn render(&self, context: &Context, image_context: &ImageContext) {
+    fn render(&self, context: &Context, image_context: &ImageContext, _depth: i32) {
         self.configure_color(&self.color, context, image_context);
 
         let mut first = true;
@@ -646,5 +646,63 @@ impl Rendable for Line {
             }
         }
         self.stroke_and_preserve_line_width(context);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::structure::Structure;
+    use cairo::Context;
+    use cairo::Format;
+    use cairo::ImageSurface;
+    use serde_json::json;
+
+    #[test]
+    fn grid_recursion_always_terminates() {
+        // create a structure that loops for ever
+        // but should stop after a while
+        let input = json!({
+            "start": {"by_name":"main"},
+            "objects": {
+                "main":{
+                    "type":"grid",
+                    "query":{"by_name":"main"},
+                }
+            }
+        });
+        let result = Structure::load_from_value(input);
+        assert!(result.is_ok());
+        let structure = result.unwrap();
+        let image_context = ImageContext::new(&structure);
+        let surface = ImageSurface::create(Format::Rgb24, 100, 100).expect("Can't create surface");
+        let context = Context::new(&surface);
+        structure.render(&context, &image_context, 100);
+        // if this function is not crashing, than all good
+    }
+
+    #[test]
+    fn sun_recursion_always_terminates() {
+        // create a structure that loops for ever
+        // but should stop after a while
+        let input = json!({
+            "start": {"by_name":"main"},
+            "objects": {
+                "main":{
+                    "type":"sun",
+                    "segments":1,
+                    "query":{"by_name":"main"},
+                }
+            }
+        });
+        let result = Structure::load_from_value(input);
+        assert!(result.is_ok());
+        let structure = result.unwrap();
+        let image_context = ImageContext::new(&structure);
+        let surface = ImageSurface::create(Format::Rgb24, 100, 100).expect("Can't create surface");
+        let context = Context::new(&surface);
+        structure.render(&context, &image_context, 100);
+        // if this function is not crashing, than all good
     }
 }

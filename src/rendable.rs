@@ -3,7 +3,7 @@ use crate::structure::ImageContext;
 use cairo::Context;
 
 pub trait Rendable {
-    fn render(&self, context: &Context, image_context: &ImageContext);
+    fn render(&self, context: &Context, image_context: &ImageContext, depth: i32);
 
     fn configure_color(&self, color: &Color, context: &Context, image_context: &ImageContext) {
         match &color {
@@ -28,7 +28,7 @@ pub trait Rendable {
 
     #[inline(always)]
     fn stroke_and_preserve_line_width(&self, context: &Context) {
-        // todo: just add this function to context
+        // todo: just add this function to context via trait
         context.save();
         context.identity_matrix();
         context.stroke();

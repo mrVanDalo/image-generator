@@ -31,7 +31,7 @@ put set it as your background image
 
 ## change stuff
 
-You can change parameters like `--width` `--height` `--color`. For more information,
+You can change parameters like `--width` `--height` `--color` `--depth`. For more information,
 have a look at 
 
 ```
