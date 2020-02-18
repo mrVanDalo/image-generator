@@ -1,6 +1,6 @@
 [package]
 name = "image-generator"
-version = "3.0.0"
+version = "3.0.1"
 authors = ["Ingolf Wagner <contact@ingolf-wagner.de>"]
 edition = "2018"
 
