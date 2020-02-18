@@ -1,4 +1,7 @@
 *.png
+*.json
+!examples/*.png
+!examples/*.json
 
 # ---> Rust
 # Compiled files
@@ -21,4 +24,3 @@
 
 /target
 **/*.rs.bk
-*.json

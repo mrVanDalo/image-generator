@@ -1,0 +1,28 @@
+{
+  "width": 200,
+  "height": 200,
+  "start": { "by_name" : "main" },
+  "objects": {
+    "main" :{
+      "type": "grid",
+      "query": { "by_tag":["tictactoe"]},
+      "scale":40,
+      "width":50,
+      "height":50,
+      "rows":3,
+      "columns":3
+    },
+    "o": {
+      "type": "ring",
+      "tags":["tictactoe"]
+    },
+    "x": {
+      "type": "sequence",
+      "tags":["tictactoe"],
+      "objects" : [
+        {"type":"line", "path": [{"x": -50, "y":-50}, {"x": 50, "y":50}]},
+        {"type":"line", "path": [{"x": 50, "y":-50}, {"x": -50, "y":50}]}
+      ]
+    }
+  }
+}

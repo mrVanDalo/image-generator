@@ -1,0 +1,13 @@
+{
+  "width": 200,
+  "height": 200,
+  "start": { "by_name" : "main" },
+  "objects": {
+    "main": {
+      "type": "ring",
+      "color": "fill",
+      "tags": ["tag1","tag2"],
+      "radius":50
+    }
+  }
+}

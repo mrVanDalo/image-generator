@@ -1,0 +1,21 @@
+{
+  "width": 200,
+  "height": 200,
+  "start": { "by_name" : "main" },
+  "objects": {
+    "main" :{
+      "type": "grid",
+      "query": { "by_name":"x"},
+      "scale":40,
+      "rows":2,
+      "columns":2
+    },
+    "x": {
+      "type": "sequence",
+      "objects" : [
+        {"type":"line", "path": [{"x": -50, "y":-50}, {"x": 50, "y":50}]},
+        {"type":"line", "path": [{"x": 50, "y":-50}, {"x": -50, "y":50}]}
+      ]
+    }
+  }
+}
