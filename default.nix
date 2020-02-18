@@ -6,9 +6,10 @@ rustPlatform.buildRustPackage rec {
   # src = ./.;
   src = fetchgit {
     url = "https://git.ingolf-wagner.de/palo/image-generator2";
-    rev = "c9ef48b1bd73a819a5fb86095774472f35d7b576";
-    sha256 = "0pdhw2calqxczdrz66wyvydd5d6m2fx7xm64z1l25nazdad930p5";
+    rev = "78cdc84a90cd818561a70bf1868ed3875d1e2204";
+    sha256 = "1r0splgsfc2sf014s71r91272icdqgfkxsp62k2jav0spwhi7sqy";
   };
+
   cargoSha256 = "07pwds279qc54g5fza805ah2m8jhrdzng7vb1bi24a9ra9ci8s29";
   verifyCargoDeps = true;
 
