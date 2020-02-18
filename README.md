@@ -19,8 +19,7 @@ export PATH=""~/.cargo/bin/:$PATH"
 ```
 
 create of find a JSON file (for example from 
-[my repository](https://git.ingolf-wagner.de/palo/image-generator-lib)) and run
-
+[my repository](https://github.com/mrVanDalo/image-generator-examples)) and run
 ```
 image-generator input.json --output background.png
 ```
@@ -49,7 +48,7 @@ Almost all parameters have a default value,
 so you don't have to name them all.
 
 For examples have a look at 
-[my repository](https://git.ingolf-wagner.de/palo/image-generator-lib)).
+[my repository](https://github.com/mrVanDalo/image-generator-examples)).
 
 ## main structure
 

@@ -14,7 +14,6 @@ readme = "README.md"
 keywords = ["image", "drawing"]
 categories = ["graphics","multimedia::images", "rendering","visualization"]
 license = "GPL-3.0"
-license-file = "LICENSE"
 maintenance = { status = "actively-developed" }
 exclude = [ "shell.nix", "default.nix" ]
 
