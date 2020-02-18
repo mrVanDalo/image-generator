@@ -96,8 +96,8 @@ To accomplish that `icon` objects always close the path.
   "color": "fill",
   "tags": ["tag1","tag2"],
   "path" : [
-    {"x": -50, "y": 50},
-    {"x": 50, "y": 50}
+    {"x": -50, "y": 0},
+    {"x": 50, "y": 0}
   ]
 }
 ```
