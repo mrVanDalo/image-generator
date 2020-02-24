@@ -10,7 +10,6 @@ pub mod objects;
 pub mod palette;
 pub mod rendable;
 pub mod structure;
-pub mod tag;
 
 use crate::rendable::Rendable;
 use crate::structure::ImageContext;
