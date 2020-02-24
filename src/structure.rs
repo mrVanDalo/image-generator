@@ -90,13 +90,37 @@ impl Rendable for Structure {
 // -------
 
 #[derive(Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum Query {
-    #[serde(rename = "by_name")]
-    ByName(String),
-    #[serde(rename = "one_of_names")]
-    OneOfNames(Vec<String>),
-    #[serde(rename = "by_tag")]
-    ByTag(Vec<String>),
+    ByName {
+        by_name: String,
+        #[serde(default)]
+        choose: Choose,
+    },
+    OneOfNames {
+        one_of_names: Vec<String>,
+        #[serde(default)]
+        choose: Choose,
+    },
+    ByTag {
+        by_tag: Vec<String>,
+        #[serde(default)]
+        choose: Choose,
+    },
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone)]
+pub enum Choose {
+    #[serde(rename = "once")]
+    Once,
+    #[serde(rename = "every_time")]
+    EveryTime,
+}
+
+impl Default for Choose {
+    fn default() -> Self {
+        Choose::EveryTime
+    }
 }
 
 pub struct ImageContext<'a> {
@@ -154,15 +178,30 @@ impl ImageContext<'_> {
             return None;
         }
         match &query {
-            Query::ByName(name) => match self.objects.get(name) {
+            Query::ByName {
+                by_name: name,
+                choose: _,
+            } => match self.objects.get(name) {
                 None => None,
                 Some(found) => ImageContext::object_to_rendable_box(found),
             },
-            Query::OneOfNames(names) => match names.choose(&mut rand::thread_rng()) {
+            Query::OneOfNames {
+                one_of_names,
+                choose,
+            } => match one_of_names.choose(&mut rand::thread_rng()) {
                 None => None,
-                Some(name) => self.get_element_from_query(&Query::ByName(name.to_string()), depth),
+                Some(name) => self.get_element_from_query(
+                    &Query::ByName {
+                        by_name: name.to_string(),
+                        choose: *choose,
+                    },
+                    depth,
+                ),
             },
-            Query::ByTag(tags) => match tags.choose(&mut rand::thread_rng()) {
+            Query::ByTag {
+                by_tag: tags,
+                choose: _,
+            } => match tags.choose(&mut rand::thread_rng()) {
                 None => None,
                 Some(tag) => match self.tags.get(tag) {
                     None => None,
