@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
+use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct Structure {
@@ -80,7 +81,9 @@ impl Structure {
 
 impl Rendable for Structure {
     fn render(&self, context: &Context, image_context: &ImageContext, depth: i32) {
-        let rendable = image_context.get_element_from_query(&self.start, depth);
+        let rendable = image_context
+            .get_element_from_query(&self.start, depth)
+            .next();
         if rendable.is_some() {
             rendable.unwrap().render(&context, image_context, depth);
         }
@@ -107,6 +110,19 @@ pub enum Query {
         #[serde(default)]
         choose: Choose,
     },
+}
+
+impl Query {
+    pub fn get_choose(&self) -> &Choose {
+        match self {
+            Query::ByName { by_name: _, choose } => choose,
+            Query::OneOfNames {
+                one_of_names: _,
+                choose,
+            } => choose,
+            Query::ByTag { by_tag: _, choose } => choose,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
@@ -158,26 +174,62 @@ impl ImageContext<'_> {
         }
     }
 
-    fn object_to_rendable_box(object: &Object) -> Option<Box<&dyn Rendable>> {
+    fn object_to_rendable_box(object: &Object) -> Option<Rc<&dyn Rendable>> {
         match object {
-            Object::Circle(element) => Some(Box::new(element)),
-            Object::Grid(element) => Some(Box::new(element)),
-            Object::Icon(element) => Some(Box::new(element)),
-            Object::Line(element) => Some(Box::new(element)),
-            Object::Ring(element) => Some(Box::new(element)),
-            Object::Sequence(element) => Some(Box::new(element)),
-            Object::Seq(element) => Some(Box::new(element)),
-            Object::Sun(element) => Some(Box::new(element)),
+            Object::Circle(element) => Some(Rc::new(element)),
+            Object::Grid(element) => Some(Rc::new(element)),
+            Object::Icon(element) => Some(Rc::new(element)),
+            Object::Line(element) => Some(Rc::new(element)),
+            Object::Ring(element) => Some(Rc::new(element)),
+            Object::Sequence(element) => Some(Rc::new(element)),
+            Object::Seq(element) => Some(Rc::new(element)),
+            Object::Sun(element) => Some(Rc::new(element)),
         }
     }
 
-    // todo : abort when scale is to small
-    pub fn get_element_from_query(&self, query: &Query, depth: i32) -> Option<Box<&dyn Rendable>> {
+    pub fn get_element_from_query<'a>(&'a self, query: &'a Query, depth: i32) -> QueryResult {
         // if to deep just stop with the elements
         if depth < 1 {
-            return None;
+            QueryResult {
+                objects: &self.objects,
+                tags: &self.tags,
+                query: query,
+                current_item: CurrentItem::Nothing,
+                is_dead_end: true,
+            }
+        } else {
+            QueryResult {
+                objects: &self.objects,
+                tags: &self.tags,
+                query: query,
+                current_item: CurrentItem::Uninitalized,
+                is_dead_end: false,
+            }
         }
-        match &query {
+    }
+
+    pub fn palette(&self) -> &Palette {
+        &self.palette
+    }
+}
+
+pub struct QueryResult<'a> {
+    objects: &'a HashMap<String, Object>,
+    tags: &'a HashMap<&'a String, Vec<&'a Object>>,
+    query: &'a Query,
+    current_item: CurrentItem<'a>,
+    is_dead_end: bool,
+}
+
+pub enum CurrentItem<'a> {
+    Uninitalized,
+    Found(Rc<&'a dyn Rendable>),
+    Nothing,
+}
+
+impl<'a> QueryResult<'a> {
+    pub fn query_next(&self) -> Option<Rc<&'a dyn Rendable>> {
+        match &self.query {
             Query::ByName {
                 by_name: name,
                 choose: _,
@@ -187,16 +239,13 @@ impl ImageContext<'_> {
             },
             Query::OneOfNames {
                 one_of_names,
-                choose,
+                choose: _,
             } => match one_of_names.choose(&mut rand::thread_rng()) {
                 None => None,
-                Some(name) => self.get_element_from_query(
-                    &Query::ByName {
-                        by_name: name.to_string(),
-                        choose: *choose,
-                    },
-                    depth,
-                ),
+                Some(name) => match self.objects.get(name) {
+                    None => None,
+                    Some(found) => ImageContext::object_to_rendable_box(found),
+                },
             },
             Query::ByTag {
                 by_tag: tags,
@@ -213,7 +262,30 @@ impl ImageContext<'_> {
             },
         }
     }
-    pub fn palette(&self) -> &Palette {
-        &self.palette
+}
+
+impl<'a> Iterator for QueryResult<'a> {
+    type Item = Rc<&'a dyn Rendable>;
+    fn next(&mut self) -> Option<Rc<&'a dyn Rendable>> {
+        if self.is_dead_end {
+            return None;
+        }
+        match self.query.get_choose() {
+            Choose::Once => match &self.current_item {
+                CurrentItem::Uninitalized => match self.query_next() {
+                    None => {
+                        self.current_item = CurrentItem::Nothing;
+                        None
+                    }
+                    Some(found) => {
+                        self.current_item = CurrentItem::Found(found.clone());
+                        Some(found)
+                    }
+                },
+                CurrentItem::Found(found) => Some(found.clone()),
+                CurrentItem::Nothing => None,
+            },
+            Choose::EveryTime => self.query_next(),
+        }
     }
 }

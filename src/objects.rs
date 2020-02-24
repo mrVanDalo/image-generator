@@ -273,6 +273,7 @@ impl Rendable for Grid {
         let start_x = (total_width / 2.0) - (self.width / 2.0);
         let start_y = (total_height / 2.0) - (self.height / 2.0);
 
+        let mut query_result = image_context.get_element_from_query(&self.query, depth);
         for x in (std::ops::Range {
             start: 0,
             end: self.columns,
@@ -281,7 +282,7 @@ impl Rendable for Grid {
                 start: 0,
                 end: self.rows,
             }) {
-                let rendable = image_context.get_element_from_query(&self.query, depth);
+                let rendable = query_result.next();
                 if rendable.is_some() {
                     context.save();
                     context.translate(
@@ -374,6 +375,9 @@ impl Rendable for Sun {
         }
 
         let segment_rotation_factor = (2.0 * std::f64::consts::PI) / f64::from(self.segments);
+
+        let mut query_result = image_context.get_element_from_query(&self.query, depth);
+
         for segment in (std::ops::Range {
             start: 0,
             end: self.segments,
@@ -385,7 +389,7 @@ impl Rendable for Sun {
             context.rotate(degree_to_radian(90.0));
             context.scale(0.01 * self.scale, 0.01 * self.scale);
 
-            let rendable = image_context.get_element_from_query(&self.query, depth);
+            let rendable = query_result.next();
             if rendable.is_some() {
                 rendable.unwrap().render(&context, image_context, depth - 1);
             }
