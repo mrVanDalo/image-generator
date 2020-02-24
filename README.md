@@ -375,6 +375,122 @@ for example in `sequence` objects will not be considered.
 }
 ```
 
+#### choose parameter
+
+The `choose` parameter is used to control how often will the query be
+used to find an object to draw at a position.
+
+##### `every_time`
+
+which finds a new object for every position.
+This is the default behavior if the `choose` parameter
+is not set.
+
+
+![./examples/choose_everytime.json](./examples/choose_everytime.png)
+```json
+{
+  "width": 200,
+  "height": 200,
+  "start": { "by_name" : "main" },
+  "objects": {
+    "main": {
+      "type": "sequence",
+      "objects":[
+        {
+          "type":"grid",
+          "scale":40,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "every_time"}
+        },
+        {
+          "type":"grid",
+          "scale":40,
+          "y":50,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "every_time"}
+        },
+        {
+          "type":"grid",
+          "scale":40,
+          "y":-50,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "every_time"}
+        }
+      ]
+    },
+    "o": {"type": "ring"},
+    "x": {
+      "type": "sequence",
+      "objects" : [
+        {"type":"line", "path": [{"x": -50, "y":-50}, {"x": 50, "y":50}]},
+        {"type":"line", "path": [{"x": 50, "y":-50}, {"x": -50, "y":50}]}
+      ]
+    }
+  }
+}
+```
+
+##### `once` 
+
+which finds one object and put them on all positions.
+
+![./examples/choose_once.json](./examples/choose_once.png)
+```json
+{
+  "width": 200,
+  "height": 200,
+  "start": { "by_name" : "main" },
+  "objects": {
+    "main": {
+      "type": "sequence",
+      "objects":[
+        {
+          "type":"grid",
+          "scale":40,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "once"}
+        },
+        {
+          "type":"grid",
+          "scale":40,
+          "y":50,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "once"}
+        },
+        {
+          "type":"grid",
+          "scale":40,
+          "y":-50,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "once"}
+        }
+      ]
+    },
+    "o": {"type": "ring"},
+    "x": {
+      "type": "sequence",
+      "objects" : [
+        {"type":"line", "path": [{"x": -50, "y":-50}, {"x": 50, "y":50}]},
+        {"type":"line", "path": [{"x": 50, "y":-50}, {"x": -50, "y":50}]}
+      ]
+    }
+  }
+}
+```
+
 ### scaling
 
 scaling of lines will not change the line size. the line size is constant and

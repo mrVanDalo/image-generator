@@ -1,0 +1,46 @@
+{
+  "width": 200,
+  "height": 200,
+  "start": { "by_name" : "main" },
+  "objects": {
+    "main": {
+      "type": "sequence",
+      "objects":[
+        {
+          "type":"grid",
+          "scale":40,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "once"}
+        },
+        {
+          "type":"grid",
+          "scale":40,
+          "y":50,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "once"}
+        },
+        {
+          "type":"grid",
+          "scale":40,
+          "y":-50,
+          "width":50,
+          "height":50,
+          "columns":3,
+          "query": { "one_of_names":["x","o"], "choose": "once"}
+        }
+      ]
+    },
+    "o": {"type": "ring"},
+    "x": {
+      "type": "sequence",
+      "objects" : [
+        {"type":"line", "path": [{"x": -50, "y":-50}, {"x": 50, "y":50}]},
+        {"type":"line", "path": [{"x": 50, "y":-50}, {"x": -50, "y":50}]}
+      ]
+    }
+  }
+}
