@@ -1,3 +1,5 @@
+//! palette are currently randomly generated.
+
 use palette::rgb::Rgb;
 use palette::FromColor;
 use palette::Hsl;
@@ -5,18 +7,16 @@ use palette::Hsv;
 use palette::IntoColor;
 use rand::prelude::*;
 
+/// The palette that is used
+/// to generate the image.
 pub struct Palette {
-    pub background_color: ColorType,
-    pub fill_color: ColorType,
-}
-
-impl Default for Palette {
-    fn default() -> Self {
-        Palette::dark_on_bright(Palette::random_color())
-    }
+    pub background_color: Rgb,
+    pub fill_color: Rgb,
 }
 
 impl Palette {
+    /// generate a random color that is not to dark
+    /// and to color less.
     pub fn random_color() -> Rgb {
         let mut rng = rand::thread_rng();
         let y: f32 = rng.gen(); // generates a float between 0 and 1
@@ -25,7 +25,9 @@ impl Palette {
         let value: f32 = f32::max(rng.gen(), 0.6);
         Rgb::from_linear(Hsv::new(hue, saturation, value).into_rgb())
     }
-    #[allow(dead_code)]
+
+    /// generate a palette from the tint and shade palette
+    /// algorithm. choose a dark background and a bright filling color
     pub fn bright_on_dark(input: Rgb) -> Palette {
         let tint_and_shade_palette = TintAndShadePalette::create(input);
         Palette {
@@ -33,7 +35,9 @@ impl Palette {
             fill_color: tint_and_shade_palette.inverse_saturation_tint_30,
         }
     }
-    #[allow(dead_code)]
+
+    /// generate a palette from the tint and shade palette
+    /// algorithm. choose a bright background and a dark filling color
     pub fn dark_on_bright(input: Rgb) -> Palette {
         let tint_and_shade_palette = TintAndShadePalette::create(input);
         Palette {
@@ -43,28 +47,29 @@ impl Palette {
     }
 }
 
-type ColorType = Rgb;
-
+/// The Tint and Shade Palette from https://gitlab.com/cameralibre/tint-and-shade
+/// Thank you Sam
 #[allow(dead_code)]
 struct TintAndShadePalette {
-    base_color: ColorType,
-    base_tint_30: ColorType,
-    base_tint_15: ColorType,
-    base_shade_15: ColorType,
-    base_shade_30: ColorType,
-    complement_tint_30: ColorType,
-    complement_tint_15: ColorType,
-    complement_color: ColorType,
-    complement_shade_15: ColorType,
-    complement_shade_30: ColorType,
-    inverse_saturation_tint_30: ColorType,
-    inverse_saturation_tint_15: ColorType,
-    inverse_saturation_color: ColorType,
-    inverse_saturation_shade_15: ColorType,
-    inverse_saturation_shade_30: ColorType,
+    base_color: Rgb,
+    base_tint_30: Rgb,
+    base_tint_15: Rgb,
+    base_shade_15: Rgb,
+    base_shade_30: Rgb,
+    complement_tint_30: Rgb,
+    complement_tint_15: Rgb,
+    complement_color: Rgb,
+    complement_shade_15: Rgb,
+    complement_shade_30: Rgb,
+    inverse_saturation_tint_30: Rgb,
+    inverse_saturation_tint_15: Rgb,
+    inverse_saturation_color: Rgb,
+    inverse_saturation_shade_15: Rgb,
+    inverse_saturation_shade_30: Rgb,
 }
 
 impl TintAndShadePalette {
+    /// create a Palette based on one input color
     pub fn create(input: Rgb) -> TintAndShadePalette {
         let hsl: Hsl = Hsl::from_rgb(input.into_linear());
         let h = hsl.hue;
